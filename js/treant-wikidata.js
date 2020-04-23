@@ -283,7 +283,7 @@ function processLevel(data, item_id, child_id, lang, level, levelCb, rows) {
             // }
             // // fetch wikitree pic if present
             // else
-                if (!image_page && getValue(claims['P2949'])) {
+                if (false && !image_page && getValue(claims['P2949'])) {
                 $.getJSON(
                     // "https://api.wikitree.com/api.php?callback=?",
                     "/treeapi",
