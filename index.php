@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width">
+  <title>WikiTree</title>
+  <style type="text/css">
+    .Treant { position: relative; overflow: hidden; padding: 0 !important; }
+    .Treant > .node,
+    .Treant > .pseudo { position: absolute; display: block; visibility: hidden; }
+    .Treant.loaded .node,
+    .Treant.loaded .pseudo { visibility: visible; }
+    .Treant > .pseudo { width: 0; height: 0; border: none; padding: 0; }
+    .Treant .collapse-switch { width: 3px; height: 3px; display: block; border: 1px solid black; position: absolute; right: 1px; cursor: pointer; }
+    .Treant .collapsed .collapse-switch { background-color: #868DEE; }
+    .Treant > .node img {	border: none; float: left; }
+
+
+    /*body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td { margin:0; padding:0; }*/
+    p,blockquote,th,td { margin:0; padding:0; }
+
+    table { border-collapse:collapse; border-spacing:0; }
+    fieldset,img { border:0; }
+    address,caption,cite,code,dfn,em,strong,th,var { font-style:normal; font-weight:normal; }
+    caption,th { text-align:left; }
+    h1,h2,h3,h4,h5,h6 { font-size:100%; font-weight:normal; }
+    q:before,q:after { content:''; }
+    abbr,acronym { border:0; }
+
+    body { background: #fff; }
+    /* optional Container STYLES */
+    .chart { height: 90%; margin: 5px; width: 100%; }
+    .Treant > .node {  }
+    .Treant > p { font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; font-weight: bold; font-size: 12px; }
+    .node-name { font-weight: bold;}
+
+    .node {
+      padding: 2px;
+      -webkit-border-radius: 3px;
+      -moz-border-radius: 3px;
+      border-radius: 3px;
+      background-color: #ffffff;
+      border: 1px solid #000;
+      width: 220px;
+      font-family: Tahoma;
+      font-size: 12px;
+    }
+    .node a {
+      color:black;
+      text-decoration: none;
+    }
+    .node-female{
+      background-color: rgba(255, 0, 0, 0.1);
+    }
+    .node-male{
+      background-color: rgba(0, 0, 255, 0.1);
+    }
+    .node-thirdgender{
+      background-color: rgba(238, 130, 238, 0.11);
+    }
+    .node img {
+      max-height: 82px;
+      margin-right:  10px;
+    }
+    .Treant .collapse-switch { width: 100%; height: 20%; bottom: 1px; border: none; }
+    .Treant .node.collapsed { border: 2px solid #000; }
+    .Treant .node.collapsed .collapse-switch { background: none; }
+  </style>
+  <link rel="stylesheet" href="https://fperucic.github.io/treant-js/collapsable/perfect-scrollbar/perfect-scrollbar.css">
+
+</head>
+<body>
+<h1>Wikidata Tree Builder</h1>
+<form method="get" id="search">
+  <input name="q" type="hidden" id="searchbox_id" />
+  <input type="text" id="searchbox" class="searchbox" value="" onblur="" onfocus="">
+  Levels: <select id="option_level" name="level">
+<!--<option>3</option>-->
+  </select>
+  Property: <select name="type">
+    <option>ancestors</option>
+    <option>owner</option>
+    <option>owns</option>
+    <option>descendants</option>
+  </select>
+  Root Orientation: <select name="orientation">
+    <option>North</option>
+    <option>East</option>
+    <option>West</option>
+    <option>South</option>
+  </select>
+  Language:
+  <input type="hidden" value="" name="lang" id="option_lang_hidden" />
+  <input id="option_lang" />
+<!--{{--  <select name="lang">--}}-->
+<!--{{--    <option>en</option>--}}-->
+<!--{{--    <option>de</option>--}}-->
+<!--{{--    <option>id</option>--}}-->
+<!--{{--    <option>fr</option>--}}-->
+<!--{{--  </select>--}}-->
+  <button type="submit">Submit</button>
+</form>
+
+<hr/>
+<div id="progressbar" style="width: 40%"></div>
+<div class="chart" id="collapsable-example"></div>
+<div id="guiButtons"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
+<!--<script type="text/javascript" src="https://www.google.com/jsapi"></script>-->
+<!--<script type="text/javascript" src="https://code.jquery.com/jquery-1.11.2.min.js"></script>-->
+<!--<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">-->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/async/0.9.0/async.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.min.js"></script>
+
+
+
+<script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous"></script>
+
+<!-- Autocomplete , load jqueryui -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css" />
+<script
+        src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+        integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+        crossorigin="anonymous"></script>
+
+
+<script src="/js/raphael.js"></script>
+<script src="/js/Treant.js"></script>
+<script src="/js/Treant-gui.js"></script>
+<script src="/js/wikidataLang.js"></script>
+<script src="/js/treant-wikidata.js"></script>
+
+<script type="text/javascript">
+    $("#option_lang").autocomplete({
+        source: getWikidataLanguagesSource(),
+        select: function( event, ui ) {
+            $( "#option_lang" ).val( ui.item.label );
+            $( "#option_lang_hidden" ).val( ui.item.id );
+            return false;
+        }
+    });
+
+    $(".searchbox").autocomplete({
+        minLength: 2,
+        source: function(request, response) {
+            console.log(request.term);
+            $.ajax({
+                // https://www.wikidata.org/w/api.php?action=wbsearchentities&search=W&format=json&errorformat=plaintext&language=en&uselang=en&type=item
+                url: "https://www.wikidata.org/w/api.php",
+                dataType: "jsonp",
+                data: {
+                    'action': "wbsearchentities",
+                    'format': "json",
+                    'errorformat' : "plaintext",
+                    'language' : "en",
+                    'uselang' : "en",
+                    'type' : "item",
+                    'search': request.term
+                },
+                success: function(data) {
+                    // console.log(data);
+                    data = data.search;
+                    response(data);
+                }
+            });
+        },
+        select: function( event, ui ) {
+            $( "#searchbox" ).val( ui.item.label );
+            $( "#searchbox_id" ).val( ui.item.id );
+            return false;
+        }
+    }).autocomplete( "instance" )._renderItem = function( ul, item ) {
+        return $( "<li>" )
+            .append( "<div><b>" + item.label + "</b><br>" + item.description + "</div>" )
+            .appendTo( ul );
+    };;
+</script>
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114291666-2"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-114291666-2');
+</script>
+
+</body>
+</html>
