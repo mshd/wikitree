@@ -25,19 +25,6 @@ var supportedTypes  = {
     ]
 };
 function wikidataApi(para, callback) {
-    // $.ajax({
-    //     dataType: "json",
-    //     url: "https://www.wikidata.org/w/api.php",
-    //     data: {
-    //         action : 'wbgetentities' ,
-    //         ids :  para.ids ,
-    //         props : para.props || 'labels|descriptions|claims' ,
-    //         languages : para.lang || 'en',
-    //         languagefallback : '1',
-    //         format : 'json'
-    //     },
-    //     success: callback
-    // });
     $.getJSON(
         "https://www.wikidata.org/w/api.php?callback=?",
         {
@@ -56,20 +43,14 @@ function getLevel(item_id, child_id, lang, level, callback, rows) {
         callback();
         return;
     }
-    $.getJSON(
-        "https://www.wikidata.org/w/api.php?callback=?",
-        {
-            action : 'wbgetentities' ,
-            ids :  item_id ,
-            props : 'labels|descriptions|claims' ,
-            languages : lang + (secondLang ? "|"+secondLang : ""),
-            languagefallback : '1',
-            format : 'json'
-        },
-        function (data) {
-            processLevel(data, item_id, child_id, lang, level, callback, rows);
-        }
-    );
+    wikidataApi({
+        ids :  item_id ,
+        props : 'labels|descriptions|claims' ,
+        languages : lang + (secondLang ? "|"+secondLang : ""),
+        languagefallback : '1',
+    },function (data) {
+        processLevel(data, item_id, child_id, lang, level, callback, rows);
+    });
 }
 
 function getValue(claim) {
