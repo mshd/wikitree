@@ -332,38 +332,6 @@ function processLevel(data, item_id, child_id, lang, level, levelCb, rows) {
                     }
                 }.bind(null, children_distinct_Qids[child]));
         }
-
-        //add parents
-
-        // asyncFunctions.push(
-        // function(callback) {
-        //     if (mother_item_id) {
-        //         getLevel(
-        //             mother_item_id,
-        //             item_id,
-        //             lang,
-        //             level-1,
-        //             callback,
-        //             rows
-        //         );
-        //     } else {
-        //         callback();
-        //     }
-        // });
-        // asyncFunctions.push(function(callback) {
-        //     if (father_item_id) {
-        //         getLevel(
-        //             father_item_id,
-        //             item_id,
-        //             lang,
-        //             level-1,
-        //             callback,
-        //             rows
-        //         );
-        //     } else {
-        //         callback();
-        //     }
-        // });
     }
 
 
