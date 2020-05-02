@@ -46,7 +46,7 @@ function getLevel(item_id, child_id, lang, level, callback, rows) {
     wikidataApi({
         ids :  item_id ,
         props : 'labels|descriptions|claims' ,
-        languages : lang + (secondLang ? "|"+secondLang : ""),
+        lang : lang + (secondLang ? "|"+secondLang : ""),
         languagefallback : '1',
     },function (data) {
         processLevel(data, item_id, child_id, lang, level, callback, rows);
@@ -127,10 +127,16 @@ function getPeopleData(claims) {
     var death_place = getValueQidAndAddLabel(claims['P20']);
 
     // // number of spouses P26
-    // var number_of_spouses = (claims['P26'] && claims['P26'].length) || 0;
+    var number_of_spouses = (claims['P26'] && claims['P26'].length) || 0;
 
 
     html = "";
+
+    if(claims.P1477){
+        html +="(born as "+ getValueData(claims.P1477,"text")+")<br />";
+    }
+
+
     if(birth_value || birth_place) {
         html +="*";
         if(birth_value) {
@@ -149,13 +155,22 @@ function getPeopleData(claims) {
         html += '<br />'
     }
 
-    // if(number_of_spouses > 0){
-    //     html +="Spouses: "+number_of_spouses+ " <br>" + getSpousesNames(claims['P26']);
-    // }
+    if(number_of_spouses > 0){
+        // html +="Spouse: "+number_of_spouses+ " <br>" + getSpousesNames(claims['P26']);
+        html +="Spouse: ";
+        var i=0;
+        claims.P26.forEach(function (claim) {
+            if(i>0){
+                html += ", ";
+            }i++;
+            html += "{" + getValueQidAndAddLabel([claim]) + "}";
+        });
+        html +=  "<br>";
+
+
+    }
     // if(claims['P69']){
     //     claims['P69'].forEach(function (claim) {
-    //         // labelIds.push(getValueQidOfClaim(value));
-    //         console.log(claim);
     //         html += "Edu: {" + getValueQidAndAddLabel([claim]) + "} ";
     //         var start = getQualifiers(claim,"P580")[0] || false;
     //         var end = getQualifiers(claim,"P582")[0] || false;
@@ -171,13 +186,14 @@ function getPeopleData(claims) {
     'P6634' : ['linkedin','https://www.linkedin.com/in/$1/'],
     'P2003' : ['instagram',' https://www.instagram.com/$1/'],
     'P2002' : ['twitter','  https://twitter.com/$1'],
-    'P2013' : ['facebook',' https://www.instagram.com/$1/'],
+    'P2013' : ['facebook',' https://www.facebook.com/$1/'],
     // 'P345' : ['imdb',' https://www.imdb.com/name/$1/']
 
     };
     for(s in socialMedia){
         if(claims[s]){
-            html += '<a target="_blank" href="'+ socialMedia[s][1].replace("$1",getValue(claims[s])) +'" class="fa fa-'+socialMedia[s][0]+'" style="margin-right: 5px"></a>';
+            // html += '<a target="_blank" href="'+ socialMedia[s][1].replace("$1",getValue(claims[s])) +'" class="fa fa-'+socialMedia[s][0]+'" style="margin-right: 5px"></a>';
+            html += '<a target="_blank" href="'+ socialMedia[s][1].replace("$1",getValue(claims[s])) +'" style="margin-right: 5px"><img src="storage/icons/'+socialMedia[s][0]+'.png" style="height: 16px;"/></a>';
         }
     }
 
@@ -188,23 +204,6 @@ function getPeopleData(claims) {
     };
 
 }
-// function getSpousesNames(spouses) {
-//     var return_html = "";
-//
-//     for (index = 0; index < spouses.length; ++index) {
-//         var value = (spouses[index] && spouses[index].mainsnak.datavalue && spouses[index].mainsnak.datavalue.value) || null;
-//         value = value ? value['numeric-id'] : null;
-//         value = value ? 'Q' + value : null;
-//
-//         if(value && labelIds.indexOf(value) === -1) {
-//             labelIds.push(value);
-//             return_html += "- {"+value+"}"+"<br>";
-//         }
-//
-//     }
-//
-//     return return_html;
-// }
 
 
 function processLevel(data, item_id, child_id, lang, level, levelCb, rows) {
@@ -213,6 +212,9 @@ function processLevel(data, item_id, child_id, lang, level, levelCb, rows) {
     $( "#progressbar" ).progressbar({value: ($( "#progressbar" ).progressbar( "option", "value" ))+5 });
 
     var label = (data.entities[item_id].labels[lang] ? data.entities[item_id].labels[lang].value : "undefined");
+    if(label == "undefined"){
+        label = (data.entities[item_id].labels.en ? data.entities[item_id].labels.en.value : "undefined");
+    }
     if(secondLang){
        var label2 = (data.entities[item_id].labels[secondLang] ? data.entities[item_id].labels[secondLang].value : null);
     }
@@ -470,7 +472,7 @@ function drawChart() {
 
     stackChildren = getParameterByName('stack') || true;
     if(stackChildren == "false" || treeType == "ancestors" || treeType == "owner"){stackChildren=false;}
-    console.log({stack:stackChildren});//c
+    console.log({stack:stackChildren,lang:lang});//c
 
 
     var orientation =getParameterByName('orientation') || 'NORTH';
