@@ -95,7 +95,7 @@ function getQualifiers(claim,q) {
 function hasEndQualifier(claim) {
     return getQualifiers(claim,"P582").length > 0;
 }
-var treeType, maxLevel, stackChildren, secondLang;
+var treeType, maxLevel, stackChildren, secondLang, showBirthName;
 var labelIds= [];
 
 function parseDate(unformattedDate){
@@ -132,7 +132,7 @@ function getPeopleData(claims) {
 
     html = "";
 
-    if(claims.P1477){
+    if(showBirthName && claims.P1477){
         html +="(born as "+ getValueData(claims.P1477,"text")+")<br />";
     }
 
@@ -163,7 +163,10 @@ function getPeopleData(claims) {
             if(i>0){
                 html += ", ";
             }i++;
-            html += "{" + getValueQidAndAddLabel([claim]) + "}";
+            var qid = getValueQidAndAddLabel([claim]);
+            if(qid) {//catch unknown value /=> null error
+                html += "{" + qid + "}";
+            }
         });
         html +=  "<br>";
 
@@ -451,6 +454,7 @@ function drawChart() {
     var lang = getParameterByName('lang') || 'en';
     moment.locale(lang);
 
+    showBirthName = false;
 
     secondLang = getParameterByName('second_lang') || null;
     // selectFormField('lang',lang);
