@@ -250,11 +250,13 @@ function processLevel(data, item_id, child_id, lang, level, levelCb, rows) {
     }
 
     var imageUrl=false;
+    var itemIdNumber = item_id.substr(1);
     if(image_page){
         imageUrl = 'https://commons.wikimedia.org/wiki/Special:FilePath/'+  image_page +'?width=100px';
     }else if(getValue(claims['P2002'])){
         imageUrl = 'https://avatars.io/twitter/'+getValue(claims['P2002']);//    https://avatars.io/twitter/jesslynewidjaja
-        console.log(imageUrl);
+    }else if(imageURLS[itemIdNumber]) {
+        imageUrl = imageURLS[itemIdNumber];
     }
 
     // gender P21
