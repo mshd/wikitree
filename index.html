@@ -5,7 +5,9 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width">
   <title>WikiTree</title>
-  <style type="text/css">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+<style type="text/css">
     .Treant { position: relative; overflow: hidden; padding: 0 !important; }
     .Treant > .node,
     .Treant > .pseudo { position: absolute; display: block; visibility: hidden; }
@@ -95,39 +97,120 @@
       background: #55ACEE;
       color: white;
     }
+
+
+
+    .form-input{
+      background: #d2d3d46e;
+    }
+
+    .app-title{
+      background: #343a40;
+      width: 100%;
+      color: white;
+      text-align: center;
+      font-weight: bold;
+      padding: 12px;
+      font-size: 120%;
+      margin: 0 ;
+    }
+
+    #progressbar{
+      width: 100%;
+      height: 5px;
+      border: none;
+    }
+
+    .ui-progressbar .ui-progressbar-value{
+      border: 1px solid #26843c;
+      background: #28a745;
+    }
+
+    @media print
+    {
+      .no-print, .no-print *
+      {
+        display: none !important;
+      }
+    }
   </style>
-  <link rel="stylesheet" href="https://fperucic.github.io/treant-js/collapsable/perfect-scrollbar/perfect-scrollbar.css">
-</head>
 <body>
-<h1>Wikidata Tree Builder</h1>
-<form method="get" id="search">
-  <input name="q" type="hidden" id="searchbox_id" />
-  <input type="text" id="searchbox" class="searchbox" value="" onblur="" onfocus="">
-  Levels: <select id="option_level" name="level">
-  </select>
-  Property: <select name="type">
-    <option>ancestors</option>
-    <option>descendants</option>
-    <option>owner</option>
-    <option>owns</option>
-  </select>
-  Root Orientation: <select name="orientation">
-    <option>North</option>
-    <option>East</option>
-    <option>West</option>
-    <option>South</option>
-  </select>
-  Language:
-  <input type="hidden" value="" name="lang" id="option_lang_hidden" />
-  <input id="option_lang" />
-  <button type="submit">Submit</button>
-</form>
+<div class="container-fluid">
+<div class="row no-print">
+  <h1 class="app-title">Wikidata Tree Builder
+    <div class="dropdown" style="margin-left:50px;display:inline;">
+      <a class="btn btn-sm btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        examples
+      </a>
 
-<hr/>
-<div id="progressbar" style="width: 40%"></div>
-<div class="chart" id="collapsable-example"></div>
-<div id="guiButtons"></div>
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+        <a class="dropdown-item" href="?q=Q712401&level=4&type=descendants&orientation=West&lang=en">Sudono Salim descendants</a>
+        <a class="dropdown-item" href="?q=Q92597022&level=4&type=descendants&orientation=North&lang=en">Walton Family</a>
+        <a class="dropdown-item" href="?q=Q4604&level=20&type=descendants&orientation=North&lang=en">Confucius descendants </a>
+        <a class="dropdown-item" href="?q=Q5269611&level=6&type=ancestors&orientation=South&lang=en">Dhirendra of Nepal ancestors</a>
+        <a class="dropdown-item" href="?q=Q1516371&level=6&type=owns&orientation=North&lang=en&stack=false">Sinar Mas subsidiaries</a>
+      </div>
+  </div>
 
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Wikidata_Stamp_Rec_Light.svg/200px-Wikidata_Stamp_Rec_Light.svg.png" style="background-color:white;height:25px;float: right;" /></h1>
+</div>
+<div class="row no-print">
+    <form method="get" id="search" class="form-input col-md-12 pt-3" >
+      <input name="q" type="hidden" id="searchbox_id"/>
+
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label for="searchbox">Search</label>
+          <input type="text" id="searchbox" class="form-control searchbox" value="" onblur="" onfocus="">
+        </div>
+
+        <div class="form-group col-md-1">
+          <label for="option_level">Levels</label>
+          <select id="option_level" class="form-control" name="level"></select>
+        </div>
+
+        <div class="form-group col-md-2">
+          <label for="type_select">Property</label>
+          <select id="type_select" class="form-control" name="type">
+            <option>ancestors</option>
+            <option>descendants</option>
+            <option>owner</option>
+            <option>owns</option>
+          </select>
+        </div>
+
+        <div class="form-group col-md-2">
+          <label for="orientation_select">Root Orientation</label>
+          <select id="orientation_select" name="orientation" class="form-control">
+            <option>North</option>
+            <option>East</option>
+            <option>West</option>
+            <option>South</option>
+          </select>
+        </div>
+
+        <div class="form-group col-md-2">
+          <label for="option_lang">Language</label>
+          <input type="hidden" value="" name="lang" id="option_lang_hidden"/>
+          <input id="option_lang" class="form-control"/>
+        </div>
+
+        <div class="form-group col-md-1 ">
+          <label>Action</label>
+          <button type="submit" class="form-control btn btn-primary">Search</button>
+        </div>
+
+      </div>
+
+    </form>
+  </div>
+
+  <div class="row render-content">
+    <div id="progressbar" ></div>
+    <div class="chart" id="collapsable-example"></div>
+    <div id="guiButtons"></div>
+  </div>
+</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/async/0.9.0/async.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment-with-locales.min.js"></script>
@@ -145,7 +228,7 @@
         src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
         integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
         crossorigin="anonymous"></script>
-
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js" integrity="sha384-6khuMg9gaYr5AxOqhkVIODVIvm9ynTT5J4V1cfthmT+emCG6yVmEZsRHdxlotUnm" crossorigin="anonymous"></script>
 
 <script src="js/raphael.js"></script>
 <script src="js/Treant.js"></script>
