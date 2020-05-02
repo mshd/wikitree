@@ -124,15 +124,18 @@ function getPeopleData(claims) {
     var death_value = getValueData(claims['P570'], 'time');
     var death_place = getValueQidAndAddLabel(claims['P20']);
     html = "";
-    if(birth_value) {
+    if(birth_value || birth_place) {
         html +="*";
-        var birth = parseDate(birth_value);
-        if(treeType === "descendants" && birth_value) {
-            sortValue = birth.dateObject;
+        if(birth_value) {
+            var birth = parseDate(birth_value);
+            if (treeType === "descendants" && birth_value) {
+                sortValue = birth.dateObject;
+            }
+            html += birth.output;
         }
-        html += birth.output + (birth_place ? " {"+birth_place+"}": "") + '<br />';
+        html += (birth_place ? " {"+birth_place+"}": "") + '<br />';
     }
-    if(death_value) {
+    if(death_value || death_place) {
         html +="†";
         html += parseDate(death_value).output;
         html += (death_place ? " {"+death_place+"}": "") + '<br />';
@@ -233,8 +236,8 @@ function processLevel(data, item_id, child_id, lang, level, levelCb, rows) {
                     html += '<p>Industry: {' + industry + '}</p>';
                 }
             }
-            if(image_page){
-                html = '<img alt="" src="https://commons.wikimedia.org/wiki/Special:FilePath/'+  image_page +'?width=100px">'  + html;
+            if(imageUrl){
+                html = '<img alt="" src="'+  imageUrl +'">'  + html;
             }
             var newRow = {
                 id: item_id,
@@ -416,7 +419,8 @@ function drawChart() {
             // console.log(rows);
             $( "#progressbar" ).progressbar({value: 80});
 
-            const replaceLabels = (string, values) => string.replace(/{(.*?)}/g, (match, offset) => values[offset].labels[lang].value);
+            const replaceLabels = (string, values) => string.replace(/{(.*?)}/g,
+                (match, offset) => (values[offset].labels && values[offset].labels[lang]) ? values[offset].labels[lang].value : values[offset].id);
             //fetch labels
             wikidataApi({
                 ids : ($.unique(labelIds)).join("|"),
