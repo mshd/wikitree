@@ -73,7 +73,9 @@ function getValueQidAndAddLabel(claim) {
     }
     return value;
 }
-
+function getYearOfQualifier(q) {
+    return q.datavalue.value.time.substr(1,4);
+}
 function getValueQidOfClaim(claim) {
     var value = (claim && claim.mainsnak.datavalue && claim.mainsnak.datavalue.value) || null;
     var numericId = value ? value['numeric-id'] : null;
@@ -123,6 +125,11 @@ function getPeopleData(claims) {
     // date of death P570
     var death_value = getValueData(claims['P570'], 'time');
     var death_place = getValueQidAndAddLabel(claims['P20']);
+
+    // // number of spouses P26
+    // var number_of_spouses = (claims['P26'] && claims['P26'].length) || 0;
+
+
     html = "";
     if(birth_value || birth_place) {
         html +="*";
@@ -137,15 +144,68 @@ function getPeopleData(claims) {
     }
     if(death_value || death_place) {
         html +="†";
-        html += parseDate(death_value).output;
-        html += (death_place ? " {"+death_place+"}": "") + '<br />';
+        html += (death_value ? parseDate(death_value).output + " ": "") ;
+        html += (death_place ? "{"+death_place+"}": "") ;
+        html += '<br />'
     }
+
+    // if(number_of_spouses > 0){
+    //     html +="Spouses: "+number_of_spouses+ " <br>" + getSpousesNames(claims['P26']);
+    // }
+    // if(claims['P69']){
+    //     claims['P69'].forEach(function (claim) {
+    //         // labelIds.push(getValueQidOfClaim(value));
+    //         console.log(claim);
+    //         html += "Edu: {" + getValueQidAndAddLabel([claim]) + "} ";
+    //         var start = getQualifiers(claim,"P580")[0] || false;
+    //         var end = getQualifiers(claim,"P582")[0] || false;
+    //         // if (start || end){
+    //         //     console.log(start);
+    //         //     html += "("+ (start ? getYearOfQualifier(start) : "") + "-"+(end ? getYearOfQualifier(end) : "")+")";
+    //         // }
+    //         html +=   "<br>";
+    //     });
+    //     // getValueQidOfClaim
+    // }
+    var socialMedia = {
+    'P6634' : ['linkedin','https://www.linkedin.com/in/$1/'],
+    'P2003' : ['instagram',' https://www.instagram.com/$1/'],
+    'P2002' : ['twitter','  https://twitter.com/$1'],
+    'P2013' : ['facebook',' https://www.instagram.com/$1/'],
+    // 'P345' : ['imdb',' https://www.imdb.com/name/$1/']
+
+    };
+    for(s in socialMedia){
+        if(claims[s]){
+            html += '<a target="_blank" href="'+ socialMedia[s][1].replace("$1",getValue(claims[s])) +'" class="fa fa-'+socialMedia[s][0]+'" style="margin-right: 5px"></a>';
+        }
+    }
+
+
     return {
         html: html,
         sortValue: sortValue
     };
 
 }
+// function getSpousesNames(spouses) {
+//     var return_html = "";
+//
+//     for (index = 0; index < spouses.length; ++index) {
+//         var value = (spouses[index] && spouses[index].mainsnak.datavalue && spouses[index].mainsnak.datavalue.value) || null;
+//         value = value ? value['numeric-id'] : null;
+//         value = value ? 'Q' + value : null;
+//
+//         if(value && labelIds.indexOf(value) === -1) {
+//             labelIds.push(value);
+//             return_html += "- {"+value+"}"+"<br>";
+//         }
+//
+//     }
+//
+//     return return_html;
+// }
+
 
 function processLevel(data, item_id, child_id, lang, level, levelCb, rows) {
     // console.log("processLevel", level);
@@ -187,6 +247,14 @@ function processLevel(data, item_id, child_id, lang, level, levelCb, rows) {
         image_page = getValue(claims['P154']);
     }if(!image_page){
         image_page = getValue(claims['P6500']);
+    }
+
+    var imageUrl=false;
+    if(image_page){
+        imageUrl = 'https://commons.wikimedia.org/wiki/Special:FilePath/'+  image_page +'?width=100px';
+    }else if(getValue(claims['P2002'])){
+        imageUrl = 'https://avatars.io/twitter/'+getValue(claims['P2002']);//    https://avatars.io/twitter/jesslynewidjaja
+        console.log(imageUrl);
     }
 
     // gender P21
