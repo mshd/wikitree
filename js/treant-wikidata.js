@@ -45,7 +45,7 @@ function getLevel(item_id, child_id, lang, level, callback, rows) {
     }
     wikidataApi({
         ids :  item_id ,
-        props : 'labels|descriptions|claims' ,
+        props : 'labels|descriptions|claims|sitelinks/urls' ,
         lang : lang + (secondLang ? "|"+secondLang : ""),
         languagefallback : '1',
     },function (data) {
@@ -95,7 +95,7 @@ function getQualifiers(claim,q) {
 function hasEndQualifier(claim) {
     return getQualifiers(claim,"P582").length > 0;
 }
-var treeType, maxLevel, stackChildren, secondLang, showBirthName;
+var treeType, maxLevel, stackChildren, secondLang, showBirthName, chartOptions = [];
 var labelIds= [];
 
 function parseDate(unformattedDate){
@@ -132,7 +132,7 @@ function getPeopleData(claims) {
 
     html = "";
 
-    if(showBirthName && claims.P1477){
+    if(chartOptions.birthname && claims.P1477){
         html +="(born as "+ getValueData(claims.P1477,"text")+")<br />";
     }
 
@@ -155,9 +155,9 @@ function getPeopleData(claims) {
         html += '<br />'
     }
 
-    if(number_of_spouses > 0){
+    if(chartOptions.spouses && number_of_spouses > 0){
         // html +="Spouse: "+number_of_spouses+ " <br>" + getSpousesNames(claims['P26']);
-        html +="Spouse: ";
+        html +="<b>⚭</b> ";
         var i=0;
         claims.P26.forEach(function (claim) {
             if(i>0){
@@ -172,19 +172,19 @@ function getPeopleData(claims) {
 
 
     }
-    // if(claims['P69']){
-    //     claims['P69'].forEach(function (claim) {
-    //         html += "Edu: {" + getValueQidAndAddLabel([claim]) + "} ";
-    //         var start = getQualifiers(claim,"P580")[0] || false;
-    //         var end = getQualifiers(claim,"P582")[0] || false;
-    //         // if (start || end){
-    //         //     console.log(start);
-    //         //     html += "("+ (start ? getYearOfQualifier(start) : "") + "-"+(end ? getYearOfQualifier(end) : "")+")";
-    //         // }
-    //         html +=   "<br>";
-    //     });
-    //     // getValueQidOfClaim
-    // }
+    if(chartOptions.education && claims['P69']){
+        claims['P69'].forEach(function (claim) {
+            html += "Edu: {" + getValueQidAndAddLabel([claim]) + "} ";
+            var start = getQualifiers(claim,"P580")[0] || false;
+            var end = getQualifiers(claim,"P582")[0] || false;
+            // if (start || end){
+            //     console.log(start);
+            //     html += "("+ (start ? getYearOfQualifier(start) : "") + "-"+(end ? getYearOfQualifier(end) : "")+")";
+            // }
+            html +=   "<br>";
+        });
+        // getValueQidOfClaim
+    }
     var socialMedia = {
     'P6634' : ['linkedin','https://www.linkedin.com/in/$1/'],
     'P2003' : ['instagram',' https://www.instagram.com/$1/'],
@@ -193,10 +193,12 @@ function getPeopleData(claims) {
     // 'P345' : ['imdb',' https://www.imdb.com/name/$1/']
 
     };
-    for(s in socialMedia){
-        if(claims[s]){
-            // html += '<a target="_blank" href="'+ socialMedia[s][1].replace("$1",getValue(claims[s])) +'" class="fa fa-'+socialMedia[s][0]+'" style="margin-right: 5px"></a>';
-            html += '<a target="_blank" href="'+ socialMedia[s][1].replace("$1",getValue(claims[s])) +'" style="margin-right: 5px"><img src="storage/icons/'+socialMedia[s][0]+'.png" style="height: 16px;"/></a>';
+    if(chartOptions.socialmedia) {
+        for (s in socialMedia) {
+            if (claims[s]) {
+                // html += '<a target="_blank" href="'+ socialMedia[s][1].replace("$1",getValue(claims[s])) +'" class="fa fa-'+socialMedia[s][0]+'" style="margin-right: 5px"></a>';
+                html += '<a target="_blank" href="' + socialMedia[s][1].replace("$1", getValue(claims[s])) + '" style="margin-right: 5px"><img src="storage/icons/' + socialMedia[s][0] + '.png" style="height: 16px;"/></a>';
+            }
         }
     }
 
@@ -299,6 +301,10 @@ function processLevel(data, item_id, child_id, lang, level, levelCb, rows) {
             html += '</p><p class="node-title">' ;
             var peopleData = getPeopleData(claims);
             html += peopleData.html;
+            if(chartOptions.socialmedia && data.entities[item_id].sitelinks && data.entities[item_id].sitelinks[lang+"wiki"])
+            html += '<a title="Read on Wikipedia" target="_blank" href="'+ data.entities[item_id].sitelinks[lang+"wiki"].url +'" style="margin-right: 5px"><img src="storage/icons/wikipedia.png" style="height: 16px;"/></a>';
+
+
             if(treeType === "descendants"){
                 sortValue = peopleData.sortValue;
             }
@@ -448,13 +454,35 @@ unflatten = function( array, parent, tree ){
 function selectFormField(name,value) {
     $("form#search select[name='"+name+"'] option").filter(function () { return $(this).html() == value; }).attr('selected','selected');
 }
+function getUrlVars() {
+
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[decodeURIComponent(key)] = value;
+    });
+    return vars;
+}
+
 function drawChart() {
     var rows = [];
     var root = getParameterByName('q') || 'Q154952';
     var lang = getParameterByName('lang') || 'en';
     moment.locale(lang);
 
-    showBirthName = false;
+    chartOptions.lang = lang;
+
+    var urlVars = getUrlVars();
+
+
+    chartOptions.birthname      = urlVars['options[birthname]'] || false;
+    chartOptions.socialmedia    = urlVars['options[socialmedia]'] || false;
+    chartOptions.education      = urlVars['options[education]'] || false;
+    chartOptions.spouses        = urlVars['options[spouses]'] || false;
+
+
+    $(".dropdown-settings a input").each(function (i) {
+        $(this).prop( 'checked', chartOptions[$(this).attr("data-value")] );
+    });
 
     secondLang = getParameterByName('second_lang') || null;
     // selectFormField('lang',lang);
@@ -474,10 +502,11 @@ function drawChart() {
     treeType = getParameterByName('type') || 'ancestors';
     selectFormField('type',treeType);
 
-    stackChildren = getParameterByName('stack') || true;
-    if(stackChildren == "false" || treeType == "ancestors" || treeType == "owner"){stackChildren=false;}
-    console.log({stack:stackChildren,lang:lang});//c
+    stackChildren = getParameterByName('stack') || true
+    chartOptions.stackChildren = stackChildren;
 
+    if(stackChildren == "false" || treeType == "ancestors" || treeType == "owner"){stackChildren=false;}
+    console.log(chartOptions);//c
 
     var orientation =getParameterByName('orientation') || 'NORTH';
     selectFormField('orientation',orientation);
@@ -504,7 +533,9 @@ function drawChart() {
                 lang: lang,
             },function (data) {
                 labels = data.entities;
+                // console.log(labels);
                 for(row in rows){
+                    // console.log(rows[row].innerHTML);
                     rows[row].innerHTML =replaceLabels(rows[row].innerHTML,labels);
                 }
 

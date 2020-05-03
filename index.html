@@ -133,6 +133,9 @@
         display: none !important;
       }
     }
+   .dropdown-settings a input {
+     margin-right: 4px;
+   }
   </style>
 <body>
 <div class="container-fluid">
@@ -144,14 +147,17 @@
       </a>
 
       <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-        <a class="dropdown-item" href="?q=Q712401&level=4&type=descendants&orientation=West&lang=en">Sudono Salim descendants</a>
-        <a class="dropdown-item" href="?q=Q92597022&level=4&type=descendants&orientation=North&lang=en">Walton Family</a>
+        <a class="dropdown-item" href="?q=Q712401&level=4&type=descendants&orientation=West&lang=en&options[birthname]=on&options[socialmedia]=on">Sudono Salim descendants</a>
+        <a class="dropdown-item" href="?q=Q92597022&level=4&type=descendants&orientation=North&lang=en&options[socialmedia]=on">Walton Family</a>
         <a class="dropdown-item" href="?q=Q4604&level=20&type=descendants&orientation=North&lang=en">Confucius descendants </a>
         <a class="dropdown-item" href="?q=Q5269611&level=6&type=ancestors&orientation=South&lang=en">Dhirendra of Nepal ancestors</a>
-        <a class="dropdown-item" href="?q=Q1516371&level=6&type=owns&orientation=North&lang=en&stack=false">Sinar Mas subsidiaries</a>
-        <a class="dropdown-item" href="?q=Q3752663&level=5&type=descendants&orientation=North&lang=en">Trump family</a>
+        <a class="dropdown-item" href="?q=Q1516371&level=6&type=owns&orientation=North&lang=en&stack=false&options[socialmedia]=on">Sinar Mas subsidiaries</a>
+        <a class="dropdown-item" href="?q=Q3752663&level=5&type=descendants&orientation=North&lang=en&options[socialmedia]=on">Trump family</a>
         <a class="dropdown-item" href="?q=Q2430565&level=9&type=descendants&orientation=North&lang=en">Hamengkubuwono, rulers of Yogyakarta</a>
         <a class="dropdown-item" href="?q=Q9682&level=5&type=descendants&orientation=North&lang=en">Elizabeth II descendants</a>
+        <a class="dropdown-item" href="?q=Q7404563&level=4&type=descendants&orientation=North&lang=en&options[socialmedia]=on">Khan family</a>
+
+
       </div>
   </div>
 
@@ -200,6 +206,18 @@
 
         <div class="form-group col-md-1 col-sm-6 ">
           <label>Action</label>
+          <div class="dropdown" style="display:inline;">
+            <a class="btn btn-sm btn-secondary dropdown-toggle" href="#" role="button" id="dropdownSettings" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+<!--              <span class="glyphicon glyphicon-cog"></span>-->
+            </a>
+
+            <div class="dropdown-menu dropdown-settings dropdown-menu-right" aria-labelledby="dropdownSettings">
+              <a class="dropdown-item" href="javascript:void(0);"><input type="checkbox" data-value="birthname" name="options[birthname]" />Birth name</a>
+              <a class="dropdown-item" href="javascript:void(0);"><input type="checkbox" data-value="socialmedia" name="options[socialmedia]" />Social Media Links</a>
+              <a class="dropdown-item" href="javascript:void(0);"><input type="checkbox" data-value="education" name="options[education]" />Education</a>
+              <a class="dropdown-item" href="javascript:void(0);"><input type="checkbox" data-value="spouses" name="options[spouses]" />Spouses</a>
+            </div>
+          </div>
           <button type="submit" class="form-control btn btn-primary">Search</button>
         </div>
 
@@ -242,6 +260,34 @@
 <script src="js/treant-wikidata.js"></script>
 
 <script type="text/javascript">
+
+
+  // var options = [];
+
+  $( '.dropdown-settings a' ).on( 'click', function( event ) {
+
+    var $target = $( event.currentTarget ),
+            // val = $target.attr( 'data-value' ),
+            $inp = $target.find( 'input' ),
+            val = $inp.attr( 'name' ),
+            idx;
+
+    // if ( ( idx = options.indexOf( val ) ) > -1 ) {
+    //   options.splice( idx, 1 );
+    //   setTimeout( function() { $inp.prop( 'checked', false ) }, 0);
+    // } else {
+    //   options.push( val );
+    //   setTimeout( function() { $inp.prop( 'checked', true ) }, 0);
+    // }
+    $inp.prop( 'checked', !$inp.prop( 'checked'));
+
+
+    $( event.target ).blur();
+
+    // console.log( options );
+    return false;
+  });
+
     $("#option_lang").autocomplete({
         source: getWikidataLanguagesSource(),
         select: function( event, ui ) {
