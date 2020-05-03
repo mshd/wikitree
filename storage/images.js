@@ -11,8 +11,12 @@ var imageURLS = {
     92471064 : "https://3.bp.blogspot.com/-N7BSUVZgY7A/T_a2l5wxQqI/AAAAAAAADAE/QJq9Cs8E1uo/s1600/Muktar+Widjaja.jpg",
     17410891 : "https://specials-images.forbesimg.com/imageserve/5d5ff9d295808800097daf75/0x0.jpg?background=000000&cropX1=791&cropX2=2496&cropY1=227&cropY2=1933",
     92959322 : "https://mustsharenews.com/wp-content/uploads/2015/06/Screen-Shot-2015-06-23-at-6.00.40-pm.png",
-
     91188298: "https://2.bp.blogspot.com/-eGOo6E0kS8E/XF-1zqMYbjI/AAAAAAAABdI/FO09P6HlqWcawWF5NgvDx7G2UhAgG0YBQCLcBGAs/s1600/andree%2BHalim.jpg",
-
     89804716: "https://2.bp.blogspot.com/-wIFhL-65rOM/XF-3GvjmoOI/AAAAAAAABdU/2Dyt4IUr2bgYKJFPC4sj69z3fjmaYB2QQCLcBGAs/s1600/Albert%2BSAlim.jpg",
+    3752663 : "https://upload.wikimedia.org/wikipedia/en/c/cd/Fred_Trump.png",
+    93085636: "https://2.bp.blogspot.com/-B6OGh4Iu7XI/XG__jrnHqXI/AAAAAAAABhg/8usZpyirHyQRPMNymoTfJArT7YPjeNQ7ACLcBGAs/s1600/Martin%2BHartono.jpg",
+    93085224: "https://2.bp.blogspot.com/-k_eF343b5sk/XG9hkt9WHeI/AAAAAAAABg8/3Cv8Xj8JwJ8lEOxe9_ERwukTIeyPey_vACLcBGAs/s1600/Armand%2BHartono.jpg",
+    2156645 : "https://peoplepill.com/media/people/thumbs/R/robert-budi-hartono.jpg",
+    6828395 : "https://tokoh.id/wp-content/uploads/2017/07/michael-bambang-hartono-bio-235x300.jpg",
+    93085730 : "https://1.bp.blogspot.com/-1CABz0ySWgw/XHYNEBwq9HI/AAAAAAAABjg/aBDmoAAXoRg7vin7vBWRtNJumeHQv9ZfgCLcBGAs/s1600/Victor%2Bhartono.jpg",
 };
