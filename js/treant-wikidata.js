@@ -210,7 +210,7 @@ function getPeopleData(claims) {
 
 }
 
-
+var nodeImages = [];
 function processLevel(data, item_id, child_id, lang, level, levelCb, rows) {
     // console.log("processLevel", level);
     // add a different class for fallback language
@@ -249,21 +249,32 @@ function processLevel(data, item_id, child_id, lang, level, levelCb, rows) {
         var father_item_id = getValueQid(claims['P22']);
         // image P18
     }
-    var image_page = getValue(claims['P18']);
-    if(!image_page){
-        image_page = getValue(claims['P154']);
-    }if(!image_page){
-        image_page = getValue(claims['P6500']);
+    var images = [];
+    if(getValue(claims['P18'])){//image
+        for(claim in claims['P18']) {
+            images.push({
+                'url': 'https://commons.wikimedia.org/wiki/Special:FilePath/' + getValue([claims['P18'][claim]]) + '?width=100px',
+            });
+        }
     }
+    if(getValue(claims['P154'])){//logo propery
+        images.push({
+            'url': 'https://commons.wikimedia.org/wiki/Special:FilePath/'+  getValue(claims['P154']) +'?width=100px',
+        });
+    }
+    // if(!image_page){
+    //     image_page = getValue(claims['P6500']);
+    // }
 
-    var imageUrl=false;
     var itemIdNumber = item_id.substr(1);
-    if(image_page){
-        imageUrl = 'https://commons.wikimedia.org/wiki/Special:FilePath/'+  image_page +'?width=100px';
-    }else if(getValue(claims['P2002'])){
-        imageUrl = 'https://avatars.io/twitter/'+getValue(claims['P2002']);//    https://avatars.io/twitter/jesslynewidjaja
-    }else if(imageURLS[itemIdNumber]) {
-        imageUrl = imageURLS[itemIdNumber];
+    if(getValue(claims['P2002'])){
+        images.push({
+            'url': 'https://avatars.io/twitter/'+getValue(claims['P2002']),    //https://avatars.io/twitter/jesslynewidjaja
+            'source': "Twitter",
+        });
+    }
+    if(imageURLS[itemIdNumber]) {
+        images.push({'url': imageURLS[itemIdNumber] });
     }
 
     // gender P21
@@ -317,8 +328,9 @@ function processLevel(data, item_id, child_id, lang, level, levelCb, rows) {
                     html += '<p>Industry: {' + industry + '}</p>';
                 }
             }
-            if(imageUrl){
-                html = '<img alt="" src="'+  imageUrl +'">'  + html;
+            if(images.length > 0){
+                nodeImages[item_id] = [0,images];
+                html = '<img class="node_image" id="image_'+ item_id +'" data-item="'+ item_id +'" alt="" src="'+  images[0].url +'">'  + html;
             }
             var newRow = {
                 id: item_id,
@@ -525,7 +537,7 @@ function drawChart() {
             $( "#progressbar" ).progressbar({value: 80});
 
             const replaceLabels = (string, values) => string.replace(/{(.*?)}/g,
-                (match, offset) => (values[offset].labels && values[offset].labels[lang]) ? values[offset].labels[lang].value : values[offset].id);
+                (match, offset) => (values && values[offset].labels && values[offset].labels[lang]) ? values[offset].labels[lang].value : values[offset].id);
             //fetch labels
             wikidataApi({
                 ids : ($.unique(labelIds)).join("|"),
@@ -568,7 +580,17 @@ function drawChart() {
                 tree = new Treant( chart_config );
                 $( "#progressbar" ).progressbar({value: 100});
                 $( "#progressbar" ).hide(500);
-
+                $('img.node_image').on('click',  function(event){
+                    console.log("click");
+                    var images =nodeImages[$(this).data('item')];
+                    if(images.length > 1){
+                        images[0]++;//counter up
+                        if(images[0] === images[1].length){
+                            images[0]=0;//reset counter;
+                        }
+                        $(this).attr('src', images[1][images[0]].url);
+                    }
+                });
 
 
             });
