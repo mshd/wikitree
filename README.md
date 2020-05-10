@@ -13,8 +13,6 @@ git clone https://github.com/dataprick/wikitree
 
 cd wikitree/
 
-cd nodejs-app/
-
 npm install
 
 npm run dev
