@@ -7,7 +7,13 @@ Tree structure of Wikidata entities
 
 This tool can show family trees of notable people, a tree of ancestors or descendants.
 
+## Install NODEJS app
 
+ git clone https://github.com/dataprick/wikitree
+cd wikitree/
+cd nodejs-app/
+npm install
+npm run dev
 
 ## Built With
 
