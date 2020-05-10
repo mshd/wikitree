@@ -19,6 +19,8 @@ npm install
 
 npm run dev
 
+Open localhost:3000/
+
 ## Built With
 
 * TreantJS
