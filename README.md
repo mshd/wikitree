@@ -9,15 +9,14 @@ This tool can show family trees of notable people, a tree of ancestors or descen
 
 ## Install NODEJS app
 
+```console
 git clone https://github.com/dataprick/wikitree
-
 cd wikitree/
-
 npm install
-
 npm run dev
+```
 
-Open localhost:3000/
+Open [localhost:3000](http://localhost:3000/)
 
 ## Built With
 
