@@ -115,62 +115,62 @@ exports.createNode = function(data, item_id, child_id, lang, treeType){
 function getPeopleData(claims, newClaims, treeType) {
 
     // date of birth P569
-    var birth_value = getValueData(claims['P569'], 'time');
-    var birth_place = getValueQidAndAddLabel(claims['P19']);
+    var birthDate = (newClaims.P569 ? wbk.wikidataTimeToSimpleDay(newClaims.P569[0].value) :null );
+    var birthPlace = addLabel(newClaims['P19']);
     var sortValue = null;
+
     // date of death P570
-    var death_value = getValueData(claims['P570'], 'time');
-    var death_place = getValueQidAndAddLabel(claims['P20']);
+    var deathDate = (newClaims.P570 ? wbk.wikidataTimeToSimpleDay(newClaims.P570[0].value) :null );
+    var deathPlace = addLabel(newClaims['P20']);
 
-    // // number of spouses P26
-    var number_of_spouses = (claims['P26'] && claims['P26'].length) || 0;
 
+    // console.log(newClaims);
 
     html = "";
 
-    if(claims.P1477){
+    if(newClaims.P1477){
         html += '<span class="co_index co_birthname">';
-        html +="(born as "+ getValueData(claims.P1477,"text")+")<br />";
+        html +="(born as "+ newClaims.P1477[0].value +")<br />";
         html += '</span>';
     }
 
 
-    if(birth_value || birth_place) {
+    if(birthDate || birthPlace) {
         html +="*";
-        if(birth_value) {
-            var birth = parseDate(birth_value);
-            if (treeType === "descendants" && birth_value) {
-                sortValue = birth.dateObject;
+        if(birthDate) {
+            // var birth = parseDate(birth_value);
+            if (treeType === "descendants" && birthDate) {
+                sortValue = birthDate;
             }
-            html += birth.output;
+            html += birthDate;
         }
-        html += (birth_place ? " {"+birth_place+"}": "") + '<br />';
+        html += (birthPlace ? " {"+birthPlace+"}": "") + '<br />';
     }
-    if(death_value || death_place) {
+    if(deathDate || deathPlace) {
         html +="†";
-        html += (death_value ? parseDate(death_value).output + " ": "") ;
-        html += (death_place ? "{"+death_place+"}": "") ;
-        html += '<br />'
+        html += (deathDate ? deathDate + " ": "") ;
+        html += (deathPlace ? "{"+deathPlace+"}": "") ;
+        html += '<br />';
     }
 
-
-    if(number_of_spouses > 0){
+    // // number of spouses P26
+    var spousesCount = (claims['P26'] && claims['P26'].length) || 0;
+    if(spousesCount > 0){
         // html +="Spouse: "+number_of_spouses+ " <br>" + getSpousesNames(claims['P26']);
         html += '<span class="co_index co_spouses">';
         html +="<b>⚭</b> ";
         var i=0;
-        claims.P26.forEach(function (claim) {
+        newClaims.P26.forEach(function (claim) {
             if(i>0){
                 html += ", ";
             }i++;
-            var qid = getValueQidAndAddLabel([claim]);
+            var qid = addLabel(claim.value);
             if(qid) {//catch unknown value /=> null error
                 html += "{" + qid + "}";
             }
         });
         html +=  "<br>";
         html += '</span>';
-
 
     }
     if(claims['P69']){
@@ -260,6 +260,15 @@ function getValueQidAndAddLabel(claim) {
         exports.labelIds.push(value);
     }
     return value;
+}
+function addLabel(claim) {
+    if(claim && Array.isArray(claim) && claim.length > 0){
+        claim = claim[0].value;
+    }
+    if(claim ) {//&& labelIds.indexOf(value) == -1
+        exports.labelIds.push(claim);
+    }
+    return claim;
 }
 function getYearOfQualifier(q) {
     return q.datavalue.value.time.substr(1,4);
