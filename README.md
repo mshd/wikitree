@@ -9,7 +9,7 @@ This tool can show family trees of notable people, a tree of ancestors or descen
 
 ## Install NODEJS app
 
-`git clone https://github.com/dataprick/wikitree
+git clone https://github.com/dataprick/wikitree
 
 cd wikitree/
 
@@ -17,7 +17,7 @@ cd nodejs-app/
 
 npm install
 
-npm run dev`
+npm run dev
 
 ## Built With
 
