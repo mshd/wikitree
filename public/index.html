@@ -256,6 +256,17 @@
     .co_index {
       display: none;
     }
+
+    .wikipediatext {
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 8;
+      -webkit-box-orient: vertical;
+    }
+    .wikipediatext p{
+      margin-bottom: 0;
+    }
+
   </style>
 
 <body>
@@ -509,6 +520,12 @@
         }).popover('show');
       });
     }
+    //close popover when clicking anywhere
+    $('body').on( 'click',  function () {
+      $("a[data-id]").popover('hide');
+    });
+
+
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
