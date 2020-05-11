@@ -154,17 +154,17 @@ function drawChart() {
                     $(".co_" + i).show();
                 }
             }
-            // $('img.node_image').on('click',  function(event){
-            //     console.log("click");
-            //     var images =nodeImages[$(this).data('item')];
-            //     if(images.length > 1){
-            //         images[0]++;//counter up
-            //         if(images[0] === images[1].length){
-            //             images[0]=0;//reset counter;
-            //         }
-            //         $(this).attr('src', images[1][images[0]].url);
-            //     }
-            // });
+``            $('img.node_image').on('click',  function(event){
+                console.log("click");
+                var images =data.nodeImages[$(this).data('item')];
+                if(images.length > 1){
+                    images[0]++;//counter up
+                    if(images[0] === images[1].length){
+                        images[0]=0;//reset counter;
+                    }
+                    $(this).attr('src', images[1][images[0]].url);
+                }
+            });
         });
 }
 function getUrlVars() {
