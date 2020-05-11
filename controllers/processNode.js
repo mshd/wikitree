@@ -84,7 +84,7 @@ exports.createNode = function (data, item_id, child_id, lang, treeType) {
     if (data.entities[item_id].sitelinks && data.entities[item_id].sitelinks[lang + "wiki"]) {
         var wikipediaName = data.entities[item_id].sitelinks[lang + "wiki"].url.split('/wiki/')[1];
         console.log(data.entities[item_id].sitelinks[lang + "wiki"].url);
-        html += '<a href="javascript:void(0);" onclick="wikipedia(this,false ,  )" data-wiki="' + wikipediaName + '" data-id="' + item_id + '" data-original-title="" title="">' + label + '</a>';
+        html += '<a href="javascript:void(0);" onclick="wikipedia(this,false ,  )" data-wiki="' + wikipediaName + '" data-id="' + itemIdNumber + '" data-original-title="" title="">' + label + '</a>';
     } else {
         html += '<a target="_blank" href="https://www.wikidata.org/wiki/' + item_id + '">' + label + '</a>';
     }
