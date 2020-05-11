@@ -1,6 +1,6 @@
 const wbk = require('wikidata-sdk');
 const moment = require('moment');
-
+const thirdPartyImages = require('../public/storage/images');
 exports.nodeImages = {};
 exports.result = {
     root: null,
@@ -62,9 +62,9 @@ exports.createNode = function (data, item_id, child_id, lang, treeType) {
     var itemIdNumber = item_id.substr(1);
 
     //TODO adding ImageURL from external file
-    // if (imageURLS[itemIdNumber]) {
-    //     images.push({ 'url': imageURLS[itemIdNumber] });
-    // }
+    if (thirdPartyImages.imageURLS[itemIdNumber]) {
+        images.push({ 'url': thirdPartyImages.imageURLS[itemIdNumber] });
+    }
 
     // gender P21
     var className = "";
