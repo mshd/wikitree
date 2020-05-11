@@ -91,7 +91,6 @@ exports.createNode = function (data, item_id, child_id, lang, treeType) {
     var html = '<p class="node-name">';
     if (data.entities[item_id].sitelinks && data.entities[item_id].sitelinks[lang + "wiki"]) {
         var wikipediaName = data.entities[item_id].sitelinks[lang + "wiki"].url.split('/wiki/')[1];
-        console.log(data.entities[item_id].sitelinks[lang + "wiki"].url);
         html += '<a href="javascript:void(0);" onclick="wikipedia(this,false ,  )" data-wiki="' + wikipediaName + '" data-id="' + itemIdNumber + '" data-original-title="" title="">' + label + '</a>';
     } else {
         html += '<a target="_blank" href="https://www.wikidata.org/wiki/' + item_id + '">' + label + '</a>';
@@ -219,10 +218,11 @@ function getPeopleData(claims, newClaims, treeType) {
     if (claims['P69']) {
         html += '<span class="co_index co_education">';
 
-        claims['P69'].forEach(function (claim) {
-            html += "Edu: {" + getValueQidAndAddLabel([claim]) + "} ";
-            var start = getQualifiers(claim, "P580")[0] || false;
-            var end = getQualifiers(claim, "P582")[0] || false;
+        newClaims['P69'].forEach(function (claim) {
+            var qid = addLabel(claim.value);
+            html += "Edu: {" + qid + "} ";
+            // var start = getQualifiers(claim, "P580")[0] || false;
+            // var end = getQualifiers(claim, "P582")[0] || false;
             // if (start || end){
             //     console.log(start);
             //     html += "("+ (start ? getYearOfQualifier(start) : "") + "-"+(end ? getYearOfQualifier(end) : "")+")";
