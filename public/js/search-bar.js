@@ -1,23 +1,4 @@
 
-// // var options = [];
-// wikidataController.wikidataApi({
-//   ids     :  ['Q1','Q2'],//make labelIds unique https://futurestud.io/tutorials/node-js-get-an-array-with-unique-values-delete-duplicates
-//   props   : 'labels' ,
-//   lang    : 'en',
-// },function (data) {
-//   console.log(data);
-// });
-// var wbk = require('wikidata-sdk');
-//
-// const url = wbk.getManyEntities({
-//   ids: ['Q1','Q2'],
-//   languages: [ 'en', 'fr', 'de' ], // returns all languages if not specified
-//   props: [ 'labels', 'descriptions', 'claims', 'sitelinks/urls' ], // returns all data if not specified
-//   // format: 'xml', // defaults to json
-//   // redirections: false // defaults to true
-// });
-// console.log(url);
-
 $('.dropdown-settings a').on('click', function (event) {
 
     var $target = $(event.currentTarget),
@@ -26,19 +7,11 @@ $('.dropdown-settings a').on('click', function (event) {
         val = $inp.attr('name'),
         idx;
 
-    // if ( ( idx = options.indexOf( val ) ) > -1 ) {
-    //   options.splice( idx, 1 );
-    //   setTimeout( function() { $inp.prop( 'checked', false ) }, 0);
-    // } else {
-    //   options.push( val );
-    //   setTimeout( function() { $inp.prop( 'checked', true ) }, 0);
-    // }
     $inp.prop('checked', !$inp.prop('checked'));
 
 
     $(event.target).blur();
 
-    // console.log( options );
     return false;
 });
 
