@@ -154,7 +154,7 @@ function drawChart() {
                     $(".co_" + i).show();
                 }
             }
-``            $('img.node_image').on('click',  function(event){
+            $('img.node_image').on('click',  function(event){
                 console.log("click");
                 var images =data.nodeImages[$(this).data('item')];
                 if(images.length > 1){
