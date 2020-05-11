@@ -50,6 +50,13 @@ exports.createNode = function (data, item_id, child_id, lang, treeType) {
             'url': 'https://commons.wikimedia.org/wiki/Special:FilePath/' + claims['P154'][0].value + '?width=100px',
         });
     }
+    //Twitter
+    if (claims['P2002']) {//https://github.com/siddharthkp/twitter-avatar
+        images.push({
+            'url': 'https://twitter-avatar.now.sh/' + claims['P2002'][0].value + '',
+            'source': "Twitter",
+        });
+    }
     // if(!image_page){
     //     image_page = getValue(claims['P6500']);
     // }
