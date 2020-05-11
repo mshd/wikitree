@@ -10,40 +10,42 @@ var treeType;
 var stackChildren = true;
 
 var maxLevel, secondLang, chartOptions = [];
-var labelIds= [];
+var labelIds = [];
 var relations = [
-    { prop : 'P22' , name : 'father' , to_q : false , edge_color : '#3923D6' } ,
-    { prop : 'P25' , name : 'mother' , to_q : false , edge_color : '#FF4848' } ,
+    { prop: 'P22', name: 'father', to_q: false, edge_color: '#3923D6' },
+    { prop: 'P25', name: 'mother', to_q: false, edge_color: '#FF4848' },
     // { prop : 'P40' , name : 'child' , to_q : false , edge_color : '#888888' }
-] ;
+];
 
-var supportedTypes  = {
+var supportedTypes = {
     'ancestors': relations,
-    'descendants' : [{ prop : 'P40' , name : 'child' , to_q : false , edge_color : '#888888' }],
-    'owner'    : [
-        { prop : 'P127' , name : 'owner' ,      to_q : false , edge_color : '#3923D6' } ,
-        { prop : 'P749' , name : 'parentOrg' ,  to_q : false , edge_color : '#FF4848' } ,
+    'descendants': [{ prop: 'P40', name: 'child', to_q: false, edge_color: '#888888' }],
+    'owner': [
+        { prop: 'P127', name: 'owner', to_q: false, edge_color: '#3923D6' },
+        { prop: 'P749', name: 'parentOrg', to_q: false, edge_color: '#FF4848' },
     ],
-    'owns'    : [
-        { prop : 'P1830' , name : 'owns' ,      to_q : false , edge_color : '#3923D6' } ,
-        { prop : 'P355' , name : 'subsidiary' , to_q : false , edge_color : '#FF4848' } ,
+    'owns': [
+        { prop: 'P1830', name: 'owns', to_q: false, edge_color: '#3923D6' },
+        { prop: 'P355', name: 'subsidiary', to_q: false, edge_color: '#FF4848' },
     ],
-    'subclasses'    : [
+    'subclasses': [
         // { prop : 'P1830' , name : 'owns' ,      to_q : false , edge_color : '#3923D6' } ,
-        { prop : 'P279' , name : 'subclass' ,  to_q : false , edge_color : '#FF4848' } ,
+        { prop: 'P279', name: 'subclass', to_q: false, edge_color: '#FF4848' },
     ]
 };
-exports.init = function(request, callback) {
+exports.init = function (request, callback) {
     var maxLevel = request.maxLevel || 3;
     var rows = [];
     stackChildren = true;//request.chartOptions.stackChildren ||
     treeType = request.property;
-    var lang ="en";
-    if(stackChildren == "false" || treeType == "ancestors" || treeType == "owner"){stackChildren=false;}
+    var lang = "en";
+    if (stackChildren == "false" || treeType == "ancestors" || treeType == "owner") { stackChildren = false; }
 
-    var cachedFilename = request.root + "-L"+maxLevel+"-"+treeType+".js";
-    cachedFilename = __dirname + '/../public/cache/'+cachedFilename;
-    if (fs.existsSync(cachedFilename)) {
+    var nocache = request.nocache;
+
+    var cachedFilename = request.root + "-L" + maxLevel + "-" + treeType + ".js";
+    cachedFilename = __dirname + '/../public/cache/' + cachedFilename;
+    if (fs.existsSync(cachedFilename) && nocache != '1') {
         console.log('The path exists.');
         let rawdata = fs.readFileSync(cachedFilename);
         let result = JSON.parse(rawdata);
@@ -57,7 +59,7 @@ exports.init = function(request, callback) {
         '',
         request.lang,
         maxLevel,
-        function() {
+        function () {
             // console.log("DONE");
             // console.log(rows);
             const replaceLabels = (string, values) => string.replace(/{(.*?)}/g,
@@ -68,10 +70,10 @@ exports.init = function(request, callback) {
             //fetch labels for vars
             //TODO no labels
             var data = wikidataController.wikidataApi({
-                ids     :  Array.from(new Set(processNode.labelIds)),//make labelIds unique https://futurestud.io/tutorials/node-js-get-an-array-with-unique-values-delete-duplicates
-                props   : 'labels' ,
-                lang    : lang,
-            },function(data) {
+                ids: Array.from(new Set(processNode.labelIds)),//make labelIds unique https://futurestud.io/tutorials/node-js-get-an-array-with-unique-values-delete-duplicates
+                props: 'labels',
+                lang: lang,
+            }, function (data) {
 
                 console.log(data);
                 labels = data.entities;
@@ -96,16 +98,16 @@ function getLevel(item_id, child_id, lang, level, callback, rows) {
         callback();
         return;
     }
-    setTimeout(function() {
+    setTimeout(function () {
 
-    wikidataController.wikidataApi({
-        ids :  [item_id ],
-        // props : 'labels|descriptions|claims|sitelinks/urls' ,
-        lang : lang //+ (secondLang ? "|"+secondLang : ""),
-    },function (data) {
-        // console.log(data);
-        processLevel(data, item_id, child_id, lang, level, callback, rows);
-    });
+        wikidataController.wikidataApi({
+            ids: [item_id],
+            // props : 'labels|descriptions|claims|sitelinks/urls' ,
+            lang: lang //+ (secondLang ? "|"+secondLang : ""),
+        }, function (data) {
+            // console.log(data);
+            processLevel(data, item_id, child_id, lang, level, callback, rows);
+        });
     }, 3000);
 }
 
@@ -118,19 +120,19 @@ function processLevel(data, item_id, child_id, lang, level, levelCb, rows) {
     newRow.stackChildren = stackChildren;
 
     var asyncFunctions = [
-        function(callback) {
+        function (callback) {
             rows.push(newRow);
             callback(null, rows);
         }
     ];
     var duplicates = rows.some(o => o.id === item_id);
     // console.log(duplicates);
-    if(!duplicates) {
+    if (!duplicates) {
         // if( && treeType != "ancestors")
         var r = supportedTypes[treeType];
-        if(!r){
+        if (!r) {
             var children = claims[treeType] || [];
-        }else {
+        } else {
             // console.log(r);
             var children = claims[r[0].prop] || [];
             if (r[1] && claims[r[1].prop]) {
@@ -141,16 +143,16 @@ function processLevel(data, item_id, child_id, lang, level, levelCb, rows) {
         // console.log("list");
         var children_distinct_Qids = [];
         console.log(children);
-        for(var child in children) {
+        for (var child in children) {
             // if (!hasEndQualifier(children[child])) {
-                var child_item_id = children[child].value;
-                if(children_distinct_Qids.indexOf(child_item_id) == -1){
-                    children_distinct_Qids.push(child_item_id);
-                }
+            var child_item_id = children[child].value;
+            if (children_distinct_Qids.indexOf(child_item_id) == -1) {
+                children_distinct_Qids.push(child_item_id);
+            }
             // }
         }
         // console.log(children_distinct_Qids);
-        for(child in children_distinct_Qids){
+        for (child in children_distinct_Qids) {
             // console.log(owner_distinct_ids[owner]);
             asyncFunctions.push(function (child_item_id, callback) {
                 // console.log(child_item_id);
@@ -173,14 +175,14 @@ function processLevel(data, item_id, child_id, lang, level, levelCb, rows) {
 
 
 
-        async.parallel(asyncFunctions,
-            function(err, results) {
-                // console.log("level", level);
-                // updateRows(rows);
-                levelCb();
-            }
-        );
-        //do stuff
+    async.parallel(asyncFunctions,
+        function (err, results) {
+            // console.log("level", level);
+            // updateRows(rows);
+            levelCb();
+        }
+    );
+    //do stuff
 
 }
 

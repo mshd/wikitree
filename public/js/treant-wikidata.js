@@ -56,6 +56,8 @@ function drawChart() {
     var rows = [];
     var root = getParameterByName('q') || 'Q154952';
     var lang = getParameterByName('lang') || 'en';
+    //Add nocache parameter 
+    var nocache = getParameterByName('nocache') || '0';;
     moment.locale(lang);
 
     chartOptions.lang = lang;
@@ -108,6 +110,7 @@ function drawChart() {
             lang: lang,
             maxLevel: maxLevel,
             property: treeType,
+            nocache: nocache,
             options: chartOptions,
         }, function (data) {
             rows = data.rows;
