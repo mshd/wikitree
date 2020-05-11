@@ -1,8 +1,7 @@
 const wbk = require('wikidata-sdk');
 const moment = require('moment');
 
-var imageURLS = [];
-
+exports.nodeImages = {};
 exports.result = {
     root: null,
 };
@@ -61,9 +60,11 @@ exports.createNode = function (data, item_id, child_id, lang, treeType) {
     //     image_page = getValue(claims['P6500']);
     // }
     var itemIdNumber = item_id.substr(1);
-    if (imageURLS[itemIdNumber]) {
-        images.push({ 'url': imageURLS[itemIdNumber] });
-    }
+
+    //TODO adding ImageURL from external file
+    // if (imageURLS[itemIdNumber]) {
+    //     images.push({ 'url': imageURLS[itemIdNumber] });
+    // }
 
     // gender P21
     var className = "";
@@ -111,7 +112,7 @@ exports.createNode = function (data, item_id, child_id, lang, treeType) {
     // }
     html += '</p>';
     if (images.length > 0) {
-        nodeImages[item_id] = [0, images];
+        exports.nodeImages[item_id] = [0, images];
         html = '<img class="node_image" id="image_' + item_id + '" data-item="' + item_id + '" alt="" src="' + images[0].url + '">' + html;
     }
     return newRow = {
@@ -277,7 +278,6 @@ function parseDate(unformattedDate) {
     }
 }
 
-var nodeImages = [];
 var result = {
     root: null,
 };

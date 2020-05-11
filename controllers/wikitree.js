@@ -84,6 +84,7 @@ exports.init = function (request, callback) {
                 }
                 var result = processNode.result;
                 result.rows = rows;
+                result.nodeImages = processNode.nodeImages;
                 fs.writeFileSync(cachedFilename, JSON.stringify(result));
                 callback(result);
             });
