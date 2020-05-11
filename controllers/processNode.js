@@ -138,7 +138,7 @@ function getPeopleData(claims, newClaims, treeType) {
 
     // burial date P4602, burial place P119
     var burialDate = (newClaims.P4602 ? wbk.wikibaseTimeToSimpleDay(newClaims.P4602[0].value) : null);
-    var burialPlace = getValueQidAndAddLabel(claims['P119']);
+    var burialPlace = addLabel(newClaims['P119']);
 
     // console.log(newClaims);
 
@@ -173,7 +173,8 @@ function getPeopleData(claims, newClaims, treeType) {
     if (burialDate || burialPlace) {
         html += "⎧ᴿᴵᴾ⎫ ";
         html += (burialDate ? burialDate + " " : "");
-        html += "{" + burialPlace + "} <br />";
+        html += (burialPlace ? "{" + burialPlace + "}" : "");
+        html += "<br />";
     }
 
     // // number of occupations P106
