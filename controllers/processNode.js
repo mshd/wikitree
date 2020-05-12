@@ -1,5 +1,6 @@
 const wbk = require('wikidata-sdk');
 const moment = require('moment');
+const fetch = require('node-fetch');
 const thirdPartyImages = require('../public/storage/images');
 exports.nodeImages = {};
 exports.result = {
@@ -66,7 +67,23 @@ exports.createNode = function (data, item_id, child_id, lang, treeType) {
     if (thirdPartyImages.imageURLS[itemIdNumber]) {
         images.push({ 'url': thirdPartyImages.imageURLS[itemIdNumber] });
     }
-
+    // Get from wikipedia images if there is no image
+    if (images.length == 0) {
+        //check if has wikipedia name, and set the name and id to be fetch in the client side;
+        if (data.entities[item_id].sitelinks && data.entities[item_id].sitelinks[lang + "wiki"]) {
+            var wikipediaName = data.entities[item_id].sitelinks[lang + "wiki"].url.split('/wiki/')[1];
+            //Async Await the response fetch
+            const getImage = async () => {
+                const response = await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + wikipediaName);
+                const json = await response.json();
+                if (json.thumbnail) {
+                    console.log(json.thumbnail.source);
+                    images.push({ 'url': json.thumbnail.source });
+                }
+            }
+            getImage();
+        }
+    }
     // gender P21
     var className = "";
 
@@ -114,12 +131,6 @@ exports.createNode = function (data, item_id, child_id, lang, treeType) {
     if (images.length > 0) {
         exports.nodeImages[item_id] = [0, images];
         html = '<img class="node_image" id="image_' + item_id + '" data-item="' + item_id + '" alt="" src="' + images[0].url + '">' + html;
-    } else {
-        //check if has wikipedia name, and set the name and id to be fetch in the client side;
-        if (data.entities[item_id].sitelinks && data.entities[item_id].sitelinks[lang + "wiki"]) {
-            var wikipediaName = data.entities[item_id].sitelinks[lang + "wiki"].url.split('/wiki/')[1];
-            html = '<img class="wikipedia_image" id="image_' + item_id + '" data-item="' + item_id + '" data-wiki="' + wikipediaName + '" alt="" src="" onerror="getWikipediaImage(\'' + item_id + '\')">' + html;
-        }
     }
     return newRow = {
         id: item_id,
