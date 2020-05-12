@@ -264,7 +264,7 @@ function getPeopleData(claims, newClaims, treeType) {
 
 //further handle BCE because other functionality is already done from wbk.wikibaseTimeToSimpleDay 
 function parseBCE(wikibaseSimpleDay) {
-    var output = "";
+    var output = wikibaseSimpleDay;
 
     if (wikibaseSimpleDay.substr(0, 1) == "-") {
         output = wikibaseSimpleDay.substring(1) + " BCE";
