@@ -185,7 +185,7 @@ function getPeopleData(claims, newClaims, treeType) {
     }
 
     // // number of occupations P106
-    var occupationsCount = (claims['P106'] && claims['P106'].length) || 0;
+    var occupationsCount = (newClaims['P106'] && newClaims['P106'].length) || 0;
     if (occupationsCount > 0) {
         html += '<span class="co_index co_occupations">';
         html += "<b>💼</b> ";
@@ -198,12 +198,11 @@ function getPeopleData(claims, newClaims, treeType) {
                 html += "{" + qid + "} <br />";
             }
         });
-        html += "<br>";
         html += '</span>';
     }
 
     // // number of spouses P26
-    var spousesCount = (claims['P26'] && claims['P26'].length) || 0;
+    var spousesCount = (newClaims['P26'] && newClaims['P26'].length) || 0;
     if (spousesCount > 0) {
         // html +="Spouse: "+number_of_spouses+ " <br>" + getSpousesNames(claims['P26']);
         html += '<span class="co_index co_spouses">';
@@ -222,14 +221,14 @@ function getPeopleData(claims, newClaims, treeType) {
         html += '</span>';
 
     }
-    if (claims['P69']) {
+    if (newClaims['P69']) {
         html += '<span class="co_index co_education">';
 
-        newClaims['P69'].forEach(function (claim) {
+        newClaims.P69.forEach(function (claim) {
             var qid = addLabel(claim.value);
             var htmlTitle = '';
-            var start = getQualifiers(claim, "P580")[0] || false;
-            var end = getQualifiers(claim, "P582")[0] || false;
+            var start = claim.qualifiers.P580 ? claim.qualifiers.P580[0] : false;
+            var end = claim.qualifiers.P582 ? claim.qualifiers.P582[0] : false;
             if (start || end) {
                 //Set start and end of education
                 htmlTitle += "("
@@ -243,16 +242,15 @@ function getPeopleData(claims, newClaims, treeType) {
                 htmlTitle += ")";
 
                 //Academic Degree 512
-                var degree = getQualifiers(claim, "P512")[0] || false;
-                if (degree) {
-                    htmlTitle += ' Degree : {' + addLabel(degree) + '} ';
-                }
+                var degree = claim.qualifiers.P512 ? claim.qualifiers.P512[0] : false;
+                if (degree)
+                    htmlTitle += (degree) ? ' Degree : {' + addLabel(degree) + '} ' : '';
 
                 //Major P812
-                var major = getQualifiers(claim, "P812")[0] || false;
-                if (major) {
-                    htmlTitle += ' Major: {' + addLabel(major) + '}';
-                }
+                var major = claim.qualifiers.P812 ? claim.qualifiers.P812[0] : false;
+                if (major)
+                    htmlTitle += (major) ? ' Major: {' + addLabel(major) + '}' : '';
+
             }
             html += '<span title="' + htmlTitle + '" >Edu: {' + qid + '} </span > <br/>';
         });
@@ -273,8 +271,8 @@ function getPeopleData(claims, newClaims, treeType) {
     };
     html += '<span class="co_index co_socialmedia">';
     for (s in socialMedia) {
-        if (claims[s]) {
-            html += '<a target="_blank" href="' + socialMedia[s][1].replace("$1", getValue(claims[s])) + '" style="margin-right: 5px"><img src="storage/icons/' + socialMedia[s][0] + '.png" style="height: 16px;"/></a>';
+        if (newClaims[s]) {
+            html += '<a target="_blank" href="' + socialMedia[s][1].replace("$1", getValue(newClaims[s])) + '" style="margin-right: 5px"><img src="storage/icons/' + socialMedia[s][0] + '.png" style="height: 16px;"/></a>';
         }
     }
     html += '</span>';
@@ -321,25 +319,10 @@ var result = {
 
 
 function getValue(claim) {
-    return (claim && claim[0].mainsnak.datavalue && claim[0].mainsnak.datavalue.value) || null;
+    return (claim && claim.value) || null;
 }
 
-function getValueData(claim, dataType) {
-    var value = getValue(claim);
-    return value ? value[dataType] : null;
-}
 
-function getValueQid(claim) {
-    var numericId = getValueData(claim, 'numeric-id');
-    return numericId ? 'Q' + numericId : null;
-}
-function getValueQidAndAddLabel(claim) {
-    value = getValueQid(claim);
-    if (value) {//&& labelIds.indexOf(value) == -1
-        exports.labelIds.push(value);
-    }
-    return value;
-}
 function addLabel(claim) {
     if (claim && Array.isArray(claim) && claim.length > 0) {
         claim = claim[0].value;
@@ -353,22 +336,4 @@ function getYearOfQualifier(q) {
     return moment(q).get('year');
     //return q.datavalue.value.time.substr(1, 4);
 }
-function getValueQidOfClaim(claim) {
-    var value = (claim && claim.mainsnak.datavalue && claim.mainsnak.datavalue.value) || null;
-    var numericId = value ? value['numeric-id'] : null;
-    return numericId ? 'Q' + numericId : null;
-}
 
-function getQualifiers(claim, q) {
-    var qualifiers = (claim && claim.qualifiers) || null;
-    if (q) {
-        if (!qualifiers) {
-            return [];
-        }
-        return (qualifiers[q]) || [];
-    }
-    return qualifiers;
-}
-function hasEndQualifier(claim) {
-    return getQualifiers(claim, "P582").length > 0;
-}
