@@ -25,7 +25,8 @@ exports.createNode = function (data, item_id, child_id, lang, treeType) {
     //     break;
     // }
     var originalClaims = data.entities[item_id].claims;
-    const claims = wbk.simplify.claims(data.entities[item_id].claims, { keepQualifiers: true });
+    const timeConverterFn = ({ time, precision }) => { return { time: time, precision: precision } };
+    const claims = wbk.simplify.claims(data.entities[item_id].claims, { keepQualifiers: true, timeConverter: timeConverterFn });
 
 
     if (!exports.result.root) {
@@ -159,21 +160,21 @@ function getPeopleData(claims, newClaims, treeType) {
             if (treeType === "descendants" && birthDate) {
                 sortValue = birthDate;
             }
-            html += birthDate;
+            html += parseBCE(birthDate);
         }
         html += (birthPlace ? " {" + birthPlace + "}" : "") + '<br />';
     }
 
     if (deathDate || deathPlace) {
         html += "†";
-        html += (deathDate ? deathDate + " " : "");
+        html += (deathDate ? parseBCE(deathDate) + " " : "");
         html += (deathPlace ? "{" + deathPlace + "}" : "");
         html += '<br />';
     }
 
     if (burialDate || burialPlace) {
         html += "⎧ᴿᴵᴾ⎫ ";
-        html += (burialDate ? burialDate + " " : "");
+        html += (burialDate ? parseBCE(burialDate) + " " : "");
         html += (burialPlace ? "{" + burialPlace + "}" : "");
         html += "<br />";
     }
@@ -259,6 +260,16 @@ function getPeopleData(claims, newClaims, treeType) {
         sortValue: sortValue
     };
 
+}
+
+//further handle BCE because other functionality is already done from wbk.wikibaseTimeToSimpleDay 
+function parseBCE(wikibaseSimpleDay) {
+    var output = "";
+
+    if (wikibaseSimpleDay.substr(0, 1) == "-") {
+        output = wikibaseSimpleDay.substring(1) + " BCE";
+    }
+    return output;
 }
 
 function parseDate(unformattedDate) {
