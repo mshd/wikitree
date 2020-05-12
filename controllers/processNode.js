@@ -227,34 +227,34 @@ function getPeopleData(claims, newClaims, treeType) {
 
         newClaims['P69'].forEach(function (claim) {
             var qid = addLabel(claim.value);
-            html += "Edu: {" + qid + "} ";
+            var htmlTitle = '';
             var start = getQualifiers(claim, "P580")[0] || false;
             var end = getQualifiers(claim, "P582")[0] || false;
             if (start || end) {
                 //Set start and end of education
-                html += "("
+                htmlTitle += "("
                 if (start && !end) {
-                    html += 'Start: ' + getYearOfQualifier(wbk.wikibaseTimeToSimpleDay(start));
+                    htmlTitle += 'Start: ' + getYearOfQualifier(wbk.wikibaseTimeToSimpleDay(start));
                 } else if (!start && end) {
-                    html += 'End : ' + getYearOfQualifier(wbk.wikibaseTimeToSimpleDay(end))
+                    htmlTitle += 'End : ' + getYearOfQualifier(wbk.wikibaseTimeToSimpleDay(end))
                 } else if (start && end) {
-                    html += (start ? getYearOfQualifier(wbk.wikibaseTimeToSimpleDay(start)) : "") + "-" + (end ? getYearOfQualifier(wbk.wikibaseTimeToSimpleDay(end)) : "");
+                    htmlTitle += (start ? getYearOfQualifier(wbk.wikibaseTimeToSimpleDay(start)) : "") + "-" + (end ? getYearOfQualifier(wbk.wikibaseTimeToSimpleDay(end)) : "");
                 }
-                html += ")";
+                htmlTitle += ")";
 
                 //Academic Degree 512
                 var degree = getQualifiers(claim, "P512")[0] || false;
                 if (degree) {
-                    html += '<br />Degree : <span title="degree" >{' + addLabel(degree) + '}</span>';
+                    htmlTitle += ' Degree : {' + addLabel(degree) + '} ';
                 }
 
                 //Major P812
                 var major = getQualifiers(claim, "P812")[0] || false;
                 if (major) {
-                    html += '<br />Major: <span title="major">{' + addLabel(major) + '}</span>';
+                    htmlTitle += ' Major: {' + addLabel(major) + '}';
                 }
             }
-            html += "<br>";
+            html += '<span title="' + htmlTitle + '" >Edu: {' + qid + '} </span > <br/>';
         });
         html += '</span>';
 
