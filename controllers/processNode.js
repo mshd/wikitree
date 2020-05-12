@@ -228,12 +228,32 @@ function getPeopleData(claims, newClaims, treeType) {
         newClaims['P69'].forEach(function (claim) {
             var qid = addLabel(claim.value);
             html += "Edu: {" + qid + "} ";
-            // var start = getQualifiers(claim, "P580")[0] || false;
-            // var end = getQualifiers(claim, "P582")[0] || false;
-            // if (start || end){
-            //     console.log(start);
-            //     html += "("+ (start ? getYearOfQualifier(start) : "") + "-"+(end ? getYearOfQualifier(end) : "")+")";
-            // }
+            var start = getQualifiers(claim, "P580")[0] || false;
+            var end = getQualifiers(claim, "P582")[0] || false;
+            if (start || end) {
+                //Set start and end of education
+                html += "("
+                if (start && !end) {
+                    html += 'Start: ' + getYearOfQualifier(wbk.wikibaseTimeToSimpleDay(start));
+                } else if (!start && end) {
+                    html += 'End : ' + getYearOfQualifier(wbk.wikibaseTimeToSimpleDay(end))
+                } else if (start && end) {
+                    html += (start ? getYearOfQualifier(wbk.wikibaseTimeToSimpleDay(start)) : "") + "-" + (end ? getYearOfQualifier(wbk.wikibaseTimeToSimpleDay(end)) : "");
+                }
+                html += ")";
+
+                //Academic Degree 512
+                var degree = getQualifiers(claim, "P512")[0] || false;
+                if (degree) {
+                    html += '<br />Degree : <span title="degree" >{' + addLabel(degree) + '}</span>';
+                }
+
+                //Major P812
+                var major = getQualifiers(claim, "P812")[0] || false;
+                if (major) {
+                    html += '<br />Major: <span title="major">{' + addLabel(major) + '}</span>';
+                }
+            }
             html += "<br>";
         });
         html += '</span>';
@@ -330,7 +350,8 @@ function addLabel(claim) {
     return claim;
 }
 function getYearOfQualifier(q) {
-    return q.datavalue.value.time.substr(1, 4);
+    return moment(q).get('year');
+    //return q.datavalue.value.time.substr(1, 4);
 }
 function getValueQidOfClaim(claim) {
     var value = (claim && claim.mainsnak.datavalue && claim.mainsnak.datavalue.value) || null;
