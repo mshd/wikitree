@@ -424,7 +424,7 @@
   <script src="js/Treant.js"></script>
   <script src="js/Treant-gui.js"></script>
   <script src="js/wikidataLang.js"></script>
-<!--  <script src="storage/images.js"></script>-->
+  <!--  <script src="storage/images.js"></script>-->
 
   <!--<script src="js/main.js"></script>-->
 
@@ -452,7 +452,17 @@
       $("a[data-id]").popover('hide');
     });
 
-
+    function getWikipediaImage(imageId) {
+      //fetch wikipedia Image
+      var image = $('#image_' + imageId);
+      var wikipediaName = image.data('wiki');
+      $.get("https://en.wikipedia.org/api/rest_v1/page/summary/" + wikipediaName,
+        function (d) {
+          if (d.thumbnail) {
+            image.prop('src', d.thumbnail.source)
+          }
+        });
+    }
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 

@@ -114,6 +114,12 @@ exports.createNode = function (data, item_id, child_id, lang, treeType) {
     if (images.length > 0) {
         exports.nodeImages[item_id] = [0, images];
         html = '<img class="node_image" id="image_' + item_id + '" data-item="' + item_id + '" alt="" src="' + images[0].url + '">' + html;
+    } else {
+        //check if has wikipedia name, and set the name and id to be fetch in the client side;
+        if (data.entities[item_id].sitelinks && data.entities[item_id].sitelinks[lang + "wiki"]) {
+            var wikipediaName = data.entities[item_id].sitelinks[lang + "wiki"].url.split('/wiki/')[1];
+            html = '<img class="wikipedia_image" id="image_' + item_id + '" data-item="' + item_id + '" data-wiki="' + wikipediaName + '" alt="" src="" onerror="getWikipediaImage(\'' + item_id + '\')">' + html;
+        }
     }
     return newRow = {
         id: item_id,
