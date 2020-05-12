@@ -11,6 +11,8 @@ var stackChildren = true;
 
 var maxLevel, secondLang, chartOptions = [];
 var labelIds = [];
+var rows = [];
+
 var relations = [
     { prop: 'P22', name: 'father', to_q: false, edge_color: '#3923D6' },
     { prop: 'P25', name: 'mother', to_q: false, edge_color: '#FF4848' },
@@ -35,7 +37,6 @@ var supportedTypes = {
 };
 exports.init = function (request, callback) {
     var maxLevel = request.maxLevel || 3;
-    var rows = [];
     stackChildren = true;//request.chartOptions.stackChildren ||
     treeType = request.property;
     var lang = "en";
@@ -53,9 +54,10 @@ exports.init = function (request, callback) {
         return;
     }
 
-
+    var itemIds = {};
+    itemIds[request.root] = 0;
     getLevel(
-        request.root,
+        itemIds,
         '',
         request.lang,
         maxLevel,
@@ -63,9 +65,9 @@ exports.init = function (request, callback) {
             // console.log("DONE");
             // console.log(rows);
             const replaceLabels = (string, values) => string.replace(/{(.*?)}/g,
-                (match, offset) => (values && values[offset].labels && values[offset].labels[lang]) ?
+                (match, offset) => (values && values[offset] && values[offset].labels && values[offset].labels[lang]) ?
                     values[offset].labels[lang].value :
-                    values[offset].id
+                    (values[offset] ? values[offset].id : "??")
             );
             //fetch labels for vars
             //TODO no labels
@@ -75,8 +77,16 @@ exports.init = function (request, callback) {
                 lang: lang,
             }, function (data) {
 
-                console.log(data);
+                // console.log(data);
                 labels = data.entities;
+                console.log("Labels Count :"+ Object.keys(labels).length);
+                labels["undefined"] = {
+                    id:"null",
+                    labels:{
+                        en: "null"
+                    }
+                };
+                labels["null"] = labels["undefined"];
                 //     // console.log(labels);
                 for (row in rows) {
                     //         // console.log(rows[row].innerHTML);
@@ -92,41 +102,55 @@ exports.init = function (request, callback) {
         rows
     );
 };
-
-function getLevel(item_id, child_id, lang, level, callback, rows) {
+var childrenInLevel = {};
+function getLevel(item_ids, child_id, lang, level, callback, rows) {
     console.log("getLevel", level);
-    if (level === 0) {
+    if (level === 0 || item_ids.length) {
         callback();
         return;
     }
-    setTimeout(function () {
+    wikidataController.wikidataApi({
+        ids: Object.keys(item_ids),
+        // props : 'labels|descriptions|claims|sitelinks/urls' ,
+        lang: lang //+ (secondLang ? "|"+secondLang : ""),
+    }, function (data, items) {
+        childrenInLevel = {};
+        for(var item_id in data.entities){
+            processLevel(data, item_id, item_ids[item_id], lang, level, callback, rows);
+        }
+        if(Object.keys(childrenInLevel).length) {
+            getLevel(
+                childrenInLevel,
+                item_id,
+                lang,
+                level - 1,
+                callback,
+                rows
+            );
+        }else{
+            callback();
+        }
 
-        wikidataController.wikidataApi({
-            ids: [item_id],
-            // props : 'labels|descriptions|claims|sitelinks/urls' ,
-            lang: lang //+ (secondLang ? "|"+secondLang : ""),
-        }, function (data) {
-            // console.log(data);
-            processLevel(data, item_id, child_id, lang, level, callback, rows);
-        });
-    }, 3000);
+    });
 }
 
 
-function processLevel(data, item_id, child_id, lang, level, levelCb, rows) {
+function processLevel(data, item_id, child_id, lang, level) {
 
     const claims = wbk.simplify.claims(data.entities[item_id].claims, { keepQualifiers: true });//TODO duplicate
 
     var newRow = processNode.createNode(data, item_id, child_id, lang, treeType);
     newRow.stackChildren = stackChildren;
 
-    var asyncFunctions = [
-        function (callback) {
-            rows.push(newRow);
-            callback(null, rows);
-        }
-    ];
+
+    // var asyncFunctions = [
+    //     function (callback) {
+    //         callback(null, rows);
+    //     }
+    // ];
     var duplicates = rows.some(o => o.id === item_id);
+    console.log("Push new row : "+ item_id);
+    rows.push(newRow);
     // console.log(duplicates);
     if (!duplicates) {
         // if( && treeType != "ancestors")
@@ -141,48 +165,54 @@ function processLevel(data, item_id, child_id, lang, level, levelCb, rows) {
             }
         }
         // var owners = (claims['P127'] || []).concat(claims['P749']);
-        // console.log("list");
         var children_distinct_Qids = [];
-        console.log(children);
+        // childrenInLevel[item_id]=[];
         for (var child in children) {
             // if (!hasEndQualifier(children[child])) {
             var child_item_id = children[child].value;
             if (children_distinct_Qids.indexOf(child_item_id) == -1) {
                 children_distinct_Qids.push(child_item_id);
             }
+            // if (childrenInLevel[item_id].indexOf(child_item_id) == -1) {
+                childrenInLevel[child_item_id] = item_id;//.push();
+            // }
             // }
         }
         // console.log(children_distinct_Qids);
-        for (child in children_distinct_Qids) {
-            // console.log(owner_distinct_ids[owner]);
-            asyncFunctions.push(function (child_item_id, callback) {
-                // console.log(child_item_id);
-                if (child_item_id) {
-                    getLevel(
-                        child_item_id,
-                        item_id,
-                        lang,
-                        level - 1,
-                        callback,
-                        rows
-                    );
-                } else {
-                    callback();
-                }
-            }.bind(null, children_distinct_Qids[child]));
-        }
+        // for (child in children_distinct_Qids) {
+        //     // console.log(owner_distinct_ids[owner]);
+        //     asyncFunctions.push(function (child_item_id, callback) {
+        //         // console.log(child_item_id);
+        //         if (child_item_id) {
+        //             getLevel(
+        //                 child_item_id,
+        //                 item_id,
+        //                 lang,
+        //                 level - 1,
+        //                 callback,
+        //                 rows
+        //             );
+        //         } else {
+        //             callback();
+        //         }
+        //     }.bind(null, children_distinct_Qids[child]));
+        // }
+        return children_distinct_Qids;
+
+
+
     }
 
 
 
 
-    async.parallel(asyncFunctions,
-        function (err, results) {
-            // console.log("level", level);
-            // updateRows(rows);
-            levelCb();
-        }
-    );
+    // async.parallel(asyncFunctions,
+    //     function (err, results) {
+    //         // console.log("level", level);
+    //         // updateRows(rows);
+    //         levelCb();
+    //     }
+    // );
     //do stuff
 
 }

@@ -1,4 +1,4 @@
-var imageURLS = {
+exports.imageURLS = {
 
     92469811 : "https://www.strategybg.com/wp-content/uploads/2013/08/Page30.jpg",
     1322162 : "https://specials-images.forbesimg.com/imageserve/5de61a58c283810006a380eb/960x0.jpg",
