@@ -240,13 +240,13 @@
       border: 1px solid #26843c;
       background: #28a745;
     }
-
+  
     @media print {
 
       .no-print,
       .no-print * {
         display: none !important;
-      }
+      }     
     }
 
     .dropdown-settings a input {
@@ -400,7 +400,10 @@
     <div class="row render-content">
       <div id="progressbar"></div>
       <div class="chart" id="collapsable-example"></div>
-      <div id="guiButtons"></div>
+      <div id="guiButtons" class="w-100 no-print">
+        <!-- <button id="print1">Print 1</button> -->
+        <button id="print2" class="btn btn-primary mb-5 mr-3 " style="float:right">Print</button>
+      </div>
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js"></script>
@@ -425,6 +428,9 @@
   <script src="js/Treant.js"></script>
   <script src="js/Treant-gui.js"></script>
   <script src="js/wikidataLang.js"></script>
+  <!-- image and canvas -->
+  <script src="js/html2canvas.js"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.2.61/jspdf.min.js"></script> -->
   <!--  <script src="storage/images.js"></script>-->
 
   <!--<script src="js/main.js"></script>-->
@@ -435,7 +441,7 @@
 
   <script type="text/javascript">
 
-
+    
     function wikipedia(e, first, table) {
       console.log("start");
       var e = $(e);
@@ -453,6 +459,47 @@
       $("a[data-id]").popover('hide');
     });
 
+    //Html2canvas screenshot the entire chart and create canvas that we can manipulate (createPDF / PNG)
+   /* $('#print1').click(function () {
+     // var doc = new jsPDF();
+        var width = document.querySelector("#collapsable-example svg").getAttribute('width');
+        var height = document.querySelector("#collapsable-example svg").getAttribute('height');
+          
+        html2canvas(document.querySelector("#collapsable-example"),{
+          width: width,
+          height: height,
+          allowTaint: true //if set to true, cannot download images because CORS security problem
+        }).then(
+          canvas => {
+            //display image to 
+            $("#img-out").append(canvas);
+            
+            doc.fromHTML(`<html><head><title>TITLE</title></head><body>` + document.getElementById('#img-out').innerHTML + `</body></html>`);
+            doc.save('div.pdf');
+          }
+        );
+      
+    });*/
+
+    //print by changing the @page size but not very much supported by other browser
+    $('#print2').click(function () {
+        var width = document.querySelector("#collapsable-example svg").getAttribute('width');
+        var height = document.querySelector("#collapsable-example svg").getAttribute('height');
+        
+        //add 150px for margin
+        width = parseInt(width) + 150;
+        height = parseInt(height) + 150;
+        //set page print width & height (Chrome)
+        document.querySelector('style').textContent +=
+          `@media print{
+            @page {
+              size:${width*1.1}px ${height}px;
+            }
+            
+          }`;
+        window.print();
+    });
+    
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
