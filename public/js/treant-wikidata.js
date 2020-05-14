@@ -108,6 +108,7 @@ function drawChart() {
         {
             root: root,
             lang: lang,
+            secondLang: secondLang,
             maxLevel: maxLevel,
             property: treeType,
             nocache: nocache,

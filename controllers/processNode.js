@@ -7,13 +7,14 @@ exports.result = {
     root: null,
 };
 exports.labelIds = [];
-exports.createNode = function (data, item_id, child_id, lang, treeType) {
+exports.createNode = function (data, item_id, child_id, lang, secondLang, treeType) {
 
     // data.entities = data;
     var label = (data.entities[item_id].labels[lang] ? data.entities[item_id].labels[lang].value : "undefined");
     if (label === "undefined") {
         label = (data.entities[item_id].labels.en ? data.entities[item_id].labels.en.value : "undefined");
     }
+    var secondLabel = (data.entities[item_id].labels[secondLang] ? data.entities[item_id].labels[secondLang].value : "undefined");
     // if(secondLang){
     //     var label2 = (data.entities[item_id].labels[secondLang] ? data.entities[item_id].labels[secondLang].value : null);
     // }
@@ -107,11 +108,25 @@ exports.createNode = function (data, item_id, child_id, lang, treeType) {
 
 
     var html = '<p class="node-name">';
-    if (data.entities[item_id].sitelinks && data.entities[item_id].sitelinks[lang + "wiki"]) {
+    //name in selected language
+    var langName = data.entities[item_id].sitelinks && data.entities[item_id].sitelinks[lang + "wiki"];
+    //name in english language
+    var englishName = data.entities[item_id].sitelinks && data.entities[item_id].sitelinks["enwiki"];
+    //check if there is wikidata title in selected language
+    if (langName) {
+        //if exist, continue as usual
         var wikipediaName = data.entities[item_id].sitelinks[lang + "wiki"].url.split('/wiki/')[1];
-        html += '<a href="javascript:void(0);" onclick="wikipedia(this,false ,  )" data-wiki="' + wikipediaName + '" data-id="' + itemIdNumber + '" data-original-title="" title="">' + label + '</a>';
-    } else {
+        html += '<a href="javascript:void(0);" onclick="wikipedia(this,\''+lang+'\',false ,  )" data-wiki="' + wikipediaName + '" data-id="' + itemIdNumber + '" data-original-title="" title="">' + label + '</a>';
+    } else if (lang != 'en' && englishName){
+        //if the wikidata title doesn't exist in language other than english, get english version title        
+        var wikipediaName = data.entities[item_id].sitelinks["enwiki"].url.split('/wiki/')[1];
+        html += '<a href="javascript:void(0);" onclick="wikipedia(this,'+'\'en\''+',false ,  )" data-wiki="' + wikipediaName + '" data-id="' + itemIdNumber + '" data-original-title="" title="">' + label + '</a>';
+    }else{
         html += '<a target="_blank" href="https://www.wikidata.org/wiki/' + item_id + '">' + label + '</a>';
+    }
+    //add second label if defined
+    if (secondLabel && secondLabel !== label && secondLabel !== "undefined"){
+        html += '<br />'+secondLabel;
     }
     // if(label2 && label != label2){//add second language icon
     //     html += '<br />'+label2;
