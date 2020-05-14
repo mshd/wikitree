@@ -425,11 +425,11 @@
     crossorigin="anonymous"></script>
 
   <script src="js/raphael.js"></script>
-  <script src="js/Treant.js"></script>
+  <!-- <script src="js/Treant.js"></script> -->
+  <script src="js/TreantSpouse.js"></script>
   <script src="js/Treant-gui.js"></script>
   <script src="js/wikidataLang.js"></script>
   <!-- image and canvas -->
-  <script src="js/html2canvas.js"></script>
   <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.2.61/jspdf.min.js"></script> -->
   <!--  <script src="storage/images.js"></script>-->
 
@@ -459,27 +459,6 @@
       $("a[data-id]").popover('hide');
     });
 
-    //Html2canvas screenshot the entire chart and create canvas that we can manipulate (createPDF / PNG)
-   /* $('#print1').click(function () {
-     // var doc = new jsPDF();
-        var width = document.querySelector("#collapsable-example svg").getAttribute('width');
-        var height = document.querySelector("#collapsable-example svg").getAttribute('height');
-          
-        html2canvas(document.querySelector("#collapsable-example"),{
-          width: width,
-          height: height,
-          allowTaint: true //if set to true, cannot download images because CORS security problem
-        }).then(
-          canvas => {
-            //display image to 
-            $("#img-out").append(canvas);
-            
-            doc.fromHTML(`<html><head><title>TITLE</title></head><body>` + document.getElementById('#img-out').innerHTML + `</body></html>`);
-            doc.save('div.pdf');
-          }
-        );
-      
-    });*/
 
     //print by changing the @page size but not very much supported by other browser
     $('#print2').click(function () {

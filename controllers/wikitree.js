@@ -2,6 +2,7 @@ const wbk = require('wikidata-sdk');
 const fetch = require('node-fetch');
 const async = require('async');
 const moment = require('moment');
+const axios = require('axios');
 const fs = require('fs');
 
 var wikidataController = require('../controllers/wikidata');
@@ -36,7 +37,8 @@ var supportedTypes = {
     ]
 };
 exports.init = function (request, callback) {
-    var maxLevel = request.maxLevel || 3;
+    //set MaxLevel to Global so it can be accessed 
+    maxLevel = request.maxLevel || 3;
     stackChildren = true;//request.chartOptions.stackChildren ||
     treeType = request.property;
     var lang = "en";
@@ -141,7 +143,28 @@ function processLevel(data, item_id, child_id, lang, level) {
 
     var newRow = processNode.createNode(data, item_id, child_id, lang, treeType);
     newRow.stackChildren = stackChildren;
-
+    //check Spouses
+    if (claims.P26 && level != maxLevel && treeType != "ancestors"){
+        var spouseId = claims.P26[0].value;
+        console.log(` SPOUSE EXIST for ${item_id} , the spouse is  ${spouseId} on level ${level}`);
+       
+        if (spouseId){
+            //The spouseId can be combined later
+            axios.get('https://www.wikidata.org//w/api.php?action=wbgetentities&format=json&ids='+spouseId+'&props=labels%7Cdescriptions%7Cclaims%7Csitelinks%2Furls&languages=en')
+                .then(response => {
+                    if (response.data){
+                        if (response.data.entities){
+                            var spouseNode = processNode.createNode(response.data, spouseId, child_id, lang, treeType);
+                            newRow['spouse'] = [spouseNode];
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+        } 
+      
+    }//end of spouse
 
     // var asyncFunctions = [
     //     function (callback) {
