@@ -75,11 +75,16 @@ exports.createNode = function (data, item_id, child_id, lang, secondLang, treeTy
             var wikipediaName = data.entities[item_id].sitelinks[lang + "wiki"].url.split('/wiki/')[1];
             //Async Await the response fetch
             const getImage = async () => {
-                const response = await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + wikipediaName);
-                const json = await response.json();
-                if (json.thumbnail) {
-                    console.log(json.thumbnail.source);
-                    images.push({ 'url': json.thumbnail.source });
+                
+                try{
+                    const response = await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + wikipediaName);
+                    const json = await response.json();
+                    if (json.thumbnail) {
+                        console.log(json.thumbnail.source);
+                        images.push({ 'url': json.thumbnail.source });
+                    }
+                }catch(err){
+                    console.log("Error getImage : "+err);
                 }
             }
             getImage();
@@ -161,16 +166,16 @@ exports.createNode = function (data, item_id, child_id, lang, secondLang, treeTy
 function getPeopleData(claims, newClaims, treeType) {
 
     // date of birth P569
-    var birthDate = (newClaims.P569 ? wbk.wikibaseTimeToSimpleDay(newClaims.P569[0].value) : null);
+    var birthDate = (newClaims.P569 && newClaims.P569[0].value !== undefined  ? parseDate2(newClaims.P569[0].value) : null);
     var birthPlace = addLabel(newClaims['P19']);
     var sortValue = null;
 
     // date of death P570
-    var deathDate = (newClaims.P570 ? wbk.wikibaseTimeToSimpleDay(newClaims.P570[0].value) : null);
+    var deathDate = (newClaims.P570 && newClaims.P570[0].value !== undefined ? (parseDate2(newClaims.P570[0].value)) : null);
     var deathPlace = addLabel(newClaims['P20']);
 
     // burial date P4602, burial place P119
-    var burialDate = (newClaims.P4602 ? wbk.wikibaseTimeToSimpleDay(newClaims.P4602[0].value) : null);
+    var burialDate = (newClaims.P4602 && newClaims.P4602[0].value !== undefined ? (parseDate2(newClaims.P4602[0].value)) : null);
     var burialPlace = addLabel(newClaims['P119']);
 
     // console.log(newClaims);
@@ -191,21 +196,21 @@ function getPeopleData(claims, newClaims, treeType) {
             if (treeType === "descendants" && birthDate) {
                 sortValue = birthDate;
             }
-            html += parseBCE(birthDate);
+            html += birthDate;
         }
         html += (birthPlace ? " {" + birthPlace + "}" : "") + '<br />';
     }
 
     if (deathDate || deathPlace) {
         html += "†";
-        html += (deathDate ? parseBCE(deathDate) + " " : "");
+        html += (deathDate ? deathDate + " " : "");
         html += (deathPlace ? "{" + deathPlace + "}" : "");
         html += '<br />';
     }
 
     if (burialDate || burialPlace) {
         html += "⎧ᴿᴵᴾ⎫ ";
-        html += (burialDate ? parseBCE(burialDate) + " " : "");
+        html += (burialDate ? burialDate + " " : "");
         html += (burialPlace ? "{" + burialPlace + "}" : "");
         html += "<br />";
     }
@@ -311,15 +316,59 @@ function getPeopleData(claims, newClaims, treeType) {
     };
 
 }
-
-//further handle BCE because other functionality is already done from wbk.wikibaseTimeToSimpleDay 
-function parseBCE(wikibaseSimpleDay) {
-    var output = wikibaseSimpleDay;
-
-    if (wikibaseSimpleDay.substr(0, 1) == "-") {
-        output = wikibaseSimpleDay.substring(1) + " BCE";
+function parseDate2(wikidatatime){
+    //check if an object
+    //example of  valid object {time: "+1500-07-07T00:00:00Z" ,precision:8}
+    if (wikidatatime instanceof Object){
+        /*
+        0 - billion years
+        3 - million years
+        4 - hundred thousand years
+        6 - millenium
+        7 - century
+        8 - decade
+        9 - year (only year)
+        10 - month (only month);
+        11 - day
+        */
+       var momentFormat = { 
+            6: "y [millennium]",
+            7: "y[th century]",
+            8: "y[s]",
+            9: "y",
+            10: "Y-MM",
+            11: "Y-MM-DD"
+        };
+       var parsedDate;
+        //check moment js validity
+        //Moment year date range valid -271820 - 275760
+        parsedDate = moment(wbk.wikibaseTimeToISOString(wikidatatime.time+''));
+        if (parsedDate.isValid()){
+            var year = parsedDate.year();
+            if (year<0){
+                parsedDate =parsedDate.format(" y N");
+            }else{
+                var precision = wikidatatime.precision;
+                if (precision == 6){
+                    parsedDate.set({'year':(year/1000)});
+                }else if (precision == 7){
+                    parsedDate.set({'year':(year/100)});
+                }else if (!precision){
+                    precision = 9;
+                }
+                parsedDate =parsedDate.format(momentFormat[wikidatatime.precision]);
+            }
+            
+        } else {
+            //if not covered with momentjs, try using simpleday
+            parsedDate = wbk.wikibaseTimeToSimpleDay(wikidatatime);
+        }
+        
+        return parsedDate;
+    }else{
+        return false;
     }
-    return output;
+
 }
 
 function parseDate(unformattedDate) {
