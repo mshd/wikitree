@@ -2,7 +2,6 @@ const wbk = require('wikidata-sdk');
 const fetch = require('node-fetch');
 const async = require('async');
 const moment = require('moment');
-const axios = require('axios');
 const fs = require('fs');
 
 var wikidataController = require('../controllers/wikidata');
@@ -158,18 +157,17 @@ function processLevel(data, item_id, child_id, lang, secondLang, level) {
        
         if (spouseId){
             //The spouseId can be combined later
-            axios.get('https://www.wikidata.org//w/api.php?action=wbgetentities&format=json&ids='+spouseId+'&props=labels%7Cdescriptions%7Cclaims%7Csitelinks%2Furls&languages=en')
-                .then(response => {
-                    if (response.data){
-                        if (response.data.entities){
-                            var spouseNode = processNode.createNode(response.data, spouseId, child_id, lang, secondLang, treeType);
-                            newRow['spouse'] = [spouseNode];
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.log(error);
-                });
+            wikidataController.wikidataApi({
+                ids: [spouseId],//make labelIds unique https://futurestud.io/tutorials/node-js-get-an-array-with-unique-values-delete-duplicates
+                props: 'labels|descriptions|claims|sitelinks/urls',
+                lang: ((lang !== "en" || secondLang !== "en")? "en|" :"" ) + lang + (secondLang ? "|"+secondLang : ""), //add default english language if selected primary or second language not english
+            }, function (response) {
+                if (response.entities){
+                    var spouseNode = processNode.createNode(response, spouseId, child_id, lang, treeType);
+                    
+                    newRow['spouse'] = [spouseNode];
+                }
+            });
         } 
       
     }//end of spouse
