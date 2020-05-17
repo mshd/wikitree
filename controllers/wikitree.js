@@ -3,6 +3,7 @@ const fetch = require('node-fetch');
 const async = require('async');
 const moment = require('moment');
 const fs = require('fs');
+// var cache = require('memory-cache');
 
 var wikidataController = require('../controllers/wikidata');
 var processNode = require('../controllers/processNode');
@@ -48,18 +49,24 @@ exports.init = function (request, callback) {
     //Second language must in default language and not equal primary language
     secondLang = (request.secondLang in defLanguage && request.secondLang !== request.lang )? request.secondLang : null;
     if (stackChildren == "false" || treeType == "ancestors" || treeType == "owner") { stackChildren = false; }
-
+    // let memCache = new cache.Cache();
     var nocache = request.nocache;
     //configure cached filename with second language
-    var cachedFilename = request.root + "-L" + maxLevel + "-" + treeType + "-" + lang +(secondLang ? "-"+secondLang : '' ) + ".js";
-    cachedFilename = __dirname + '/../public/cache/' + cachedFilename;
-    if (fs.existsSync(cachedFilename) && nocache != '1') {
-        console.log('The path exists.');
-        let rawdata = fs.readFileSync(cachedFilename);
-        let result = JSON.parse(rawdata);
-        callback(result);
-        return;
-    }
+    var cachedKey = "Cache"+request.root + "-L" + maxLevel + "-" + treeType + "-" + lang +(secondLang ? "-"+secondLang : '' ) + ".js";
+    console.log(cachedKey);
+    cachedFilename = __dirname + '/../public/cache/' + cachedKey;
+    // let cacheContent = memCache.get(cachedKey);
+    // if(cacheContent && nocache != '1'){
+    //     callback(cacheContent);
+    //     return;
+    // }
+    // if (fs.existsSync(cachedFilename) && nocache != '1') {
+    //     console.log('The path exists.');
+    //     let rawdata = fs.readFileSync(cachedFilename);
+    //     let result = JSON.parse(rawdata);
+    //     callback(result);
+    //     return;
+    // }
 
     var itemIds = {};
     itemIds[request.root] = 0;
@@ -103,7 +110,8 @@ exports.init = function (request, callback) {
                 var result = processNode.result;
                 result.rows = rows;
                 result.nodeImages = processNode.nodeImages;
-                fs.writeFileSync(cachedFilename, JSON.stringify(result));
+                // fs.writeFileSync(cachedFilename, JSON.stringify(result));
+                // memCache.put(cachedKey,result,3000*1000);
                 callback(result);
             });
         },
@@ -151,8 +159,7 @@ function processLevel(data, item_id, child_id, lang, secondLang, level) {
     var newRow = processNode.createNode(data, item_id, child_id, lang, secondLang, treeType);
     newRow.stackChildren = stackChildren;
     //check Spouses
-    if (claims.P26 && level != maxLevel && treeType != "ancestors"){
-        var spouseId = claims.P26[0].value;
+    if (claims.P26 && level != maxLevel && treeType === "descendants" && false){
         console.log(` SPOUSE EXIST for ${item_id} , the spouse is  ${spouseId} on level ${level}`);
        
         if (spouseId){
