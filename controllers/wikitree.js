@@ -60,7 +60,7 @@ exports.init = function (request, callback) {
     var nocache = request.nocache;
     //configure cached filename with second language
     var cachedKey = "Cache"+request.root + "-L" + maxLevel + "-" + treeType + "-" + lang +(secondLang ? "-"+secondLang : '' ) + ".js";
-    console.log(cachedKey);
+    console.log("KEy" + cachedKey);
     cachedFilename = __dirname + '/../public/cache/' + cachedKey;
     // let cacheContent = memCache.get(cachedKey);
     // if(cacheContent && nocache != '1'){
