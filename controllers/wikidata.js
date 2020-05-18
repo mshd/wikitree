@@ -22,7 +22,7 @@ exports.wikidataApi = function(para, callback) {
                 // console.log(entities);
                 callback(entities);
                 // return entities;
-            });
+            }).catch(error => console.log("ERROR fetch in Wikidata.js :"+error.message)); //add Error catch
     }else{
         //https://stackoverflow.com/questions/31710768/how-can-i-fetch-an-array-of-urls-with-promise-all
         //map all requests and emerge the entities
@@ -37,7 +37,7 @@ exports.wikidataApi = function(para, callback) {
             }
             callback({entities: entities});
 
-        });
+        }).catch(error => console.log("Error Promise in wikidata.js : "+error.message)); //add Error catch
     }
 
 };

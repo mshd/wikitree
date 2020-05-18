@@ -75,19 +75,14 @@ exports.createNode = function (data, item_id, child_id, lang, secondLang, treeTy
             var wikipediaName = data.entities[item_id].sitelinks[lang + "wiki"].url.split('/wiki/')[1];
             //Async Await the response fetch
             const getImage = async () => {
-                
-                try{
-                    const response = await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + wikipediaName);
-                    const json = await response.json();
-                    if (json.thumbnail) {
-                        console.log(json.thumbnail.source);
-                        images.push({ 'url': json.thumbnail.source });
-                    }
-                }catch(err){
-                    console.log("Error getImage : "+err);
+                const response = await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + wikipediaName);
+                const json = await response.json();
+                if (json.thumbnail) {
+                    console.log(json.thumbnail.source);
+                    images.push({ 'url': json.thumbnail.source });
                 }
             }
-            getImage();
+            getImage().catch(error => console.log("Error get Wikipedia Image : "+error.message)); //add Error catch
         }
     }
     // gender P21
@@ -303,7 +298,7 @@ function getPeopleData(claims, newClaims, treeType) {
     html += '<span class="co_index co_socialmedia">';
     for (s in socialMedia) {
         if (newClaims[s]) {
-            html += '<a target="_blank" href="' + socialMedia[s][1].replace("$1", getValue(newClaims[s])) + '" style="margin-right: 5px"><img src="storage/icons/' + socialMedia[s][0] + '.png" style="height: 16px;"/></a>';
+            html += '<a target="_blank" href="' + socialMedia[s][1].replace("$1", newClaims[s][0].value) + '"  style="margin-right: 5px"><img src="storage/icons/' + socialMedia[s][0] + '.png" style="height: 16px;"/></a>';
         }
     }
     html += '</span>';

@@ -20,3 +20,4 @@ function getWikidataLanguagesSource() {
     }
     return r;
 }
+getWDLanguages = getWikidataLanguages(); //set variable to be accessed 
