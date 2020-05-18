@@ -103,6 +103,20 @@ function drawChart() {
 
     var orientation = getParameterByName('orientation') || 'NORTH';
     selectFormField('orientation', orientation);
+    //set the animation progressbar
+    var progressBar = $("#progressbar");
+    var i = 10;
+    var progressTimer = setInterval(frame,500);
+    function frame() {
+        //stop timer and hide progress bar when value >= 100
+        if ( progressBar.progressbar('value') >= 100) {
+            clearInterval(progressTimer);
+            $("#progressbar").hide(500);
+        } else {
+            i += 2+(10/maxLevel);
+            progressBar.progressbar('value',i);
+        }
+    }
 
     $.getJSON('/createtree',
         {
