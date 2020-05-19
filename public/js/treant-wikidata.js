@@ -35,6 +35,24 @@ unflatten = function (array, parent, tree) {
             return a.sortValue - b.sortValue
         })
     }
+    
+    //get all siblings by S_ identifier and configure the sibling link only when show siblings option selected
+    if (chartOptions.siblings){
+        //get all the siblings with S_ identifier we configured
+        var siblings = _.filter(array, function (sibling) { return sibling.parent_id == 'S_'+parent.id; });
+        if (siblings.length && siblings[0].sortValue) {
+            siblings = siblings.sort(function (a, b) {
+                return a.sortValue - b.sortValue
+            })
+        }
+        // bind all the siblings to the ['siblings'] in the node
+        // console.log(siblings);
+        if (!_.isEmpty(siblings)) {
+            if (parent.id != 0) {
+                parent['sibling'] = siblings
+            }
+        }
+    }
     // console.log(children);
     if (!_.isEmpty(children)) {
         if (parent.id == 0) {
@@ -69,6 +87,7 @@ function drawChart() {
     chartOptions.education = urlVars['options[education]'] || false;
     chartOptions.spouses = urlVars['options[spouses]'] || false;
     chartOptions.occupations = urlVars['options[occupations]'] || false;
+    chartOptions.siblings = urlVars['options[siblings]'] || false;
     chartOptions.stackChildren = getParameterByName('stack') || true;
 
 

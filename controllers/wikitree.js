@@ -208,6 +208,32 @@ function processLevel(data, item_id, child_id, lang, secondLang, level) {
       
     }//end of spouse
 
+    //check siblings only at the top of the node
+    if (claims.P3373 && level == maxLevel && treeType === "ancestors"){
+
+        var siblings = claims.P3373.map(item => (item.value));
+        
+        console.log(` Sibling EXIST for ${item_id} , sibling count is  ${siblings.length} on level ${level}`);
+        
+        if (siblings && siblings.length > 0 ){
+            //get all siblings
+            wikidataController.wikidataApi({
+                ids: Array.from(new Set(siblings)),//make labelIds unique https://futurestud.io/tutorials/node-js-get-an-array-with-unique-values-delete-duplicates
+                props: 'labels|descriptions|claims|sitelinks/urls',
+                lang: ((lang !== "en" || secondLang !== "en")? "en|" :"" ) + lang + (secondLang ? "|"+secondLang : ""), //add default english language if selected primary or second language not english
+            }, function (response) {
+                if (response.entities){
+                    Object.keys(response.entities).forEach((key)=>{
+                        //push siblings to row and add S_ to identify the sibling connection (to be processed in treant-wikidata.js)
+                        var node = processNode.createNode(response, key, 'S_'+item_id, lang, treeType);
+                        rows.push(node);
+                    });
+                }
+            });
+        } 
+    
+    }//end of siblings
+
     // var asyncFunctions = [
     //     function (callback) {
     //         callback(null, rows);
