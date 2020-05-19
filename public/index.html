@@ -43,23 +43,67 @@
       position: absolute;
       right: 1px;
       cursor: pointer;
-    }
-
-    .Treant .collapsed .collapse-switch {
-      background-color: #868DEE;
-    }
-
-    .Treant>.node img {
-      border: none;
-      float: left;
-    }
-
-    .Treant .collapse-switch {
       width: 10%;
       height: 20%;
       bottom: 1px;
       border: none;
     }
+    /* https://www.labnol.org/code/20086-css-arrow-caret-symbol */
+    /* caret to uncollapse */
+    .Treant .collapse-switch:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      border : 0;
+      border-bottom: 10px solid #5959f3;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+    }
+
+    .Treant .collapse-switch:after {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 5px;
+      border : 0;
+      border-bottom: 5px solid #fff;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+    }
+    /* end of caret to uncollapse */
+
+    .Treant .collapsed .collapse-switch {
+      background-color: #868DEE;
+    }
+    /* caret to collapse */
+    .Treant .collapsed .collapse-switch:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      border : 0;
+      border-top: 10px solid #5959f3;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+    }
+
+    .Treant .collapsed .collapse-switch:after {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 0;
+      border : 0;
+      border-top: 5px solid #fff;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+    }
+    /* end of caret to collapse */
+    .Treant>.node img {
+      border: none;
+      float: left;
+    }
+
 
     .Treant .node.collapsed {
       border: 2px solid #000;
