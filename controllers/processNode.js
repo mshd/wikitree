@@ -105,8 +105,20 @@ exports.createNode = function (data, item_id, child_id, lang, secondLang, treeTy
             className = 'node-thirdgender';
         }
     }
+    //get father_id and mother_id if descendants
+    if(treeType === "descendants"){
+        var father_id;
+        //father P22
+        if (claims['P22']) {
+            father_id = claims['P22'][0].value;
+        }
 
-
+        var mother_id;
+        //mother P25
+        if (claims['P25']) {
+            mother_id = claims['P25'][0].value;
+        }
+    }
     var html = '<p class="node-name">';
     //name in selected language
     var langName = data.entities[item_id].sitelinks && data.entities[item_id].sitelinks[lang + "wiki"];
@@ -148,13 +160,26 @@ exports.createNode = function (data, item_id, child_id, lang, secondLang, treeTy
         exports.nodeImages[item_id] = [0, images];
         html = '<img class="node_image" id="image_' + item_id + '" data-item="' + item_id + '" alt="" src="' + images[0].url + '">' + html;
     }
-    return newRow = {
-        id: item_id,
-        innerHTML: html,
-        parent_id: child_id,
-        HTMLclass: className,
-        sortValue: sortValue,
-    };
+    //add mother_id and father_id to child node if type is descendants
+    if(treeType === "descendants"){
+        return newRow = {
+            id: item_id,
+            innerHTML: html,
+            parent_id: child_id,
+            mother_id: mother_id,
+            father_id: father_id,
+            HTMLclass: className,
+            sortValue: sortValue,
+        };
+    }else{
+        return newRow = {
+            id: item_id,
+            innerHTML: html,
+            parent_id: child_id,
+            HTMLclass: className,
+            sortValue: sortValue,
+        };
+    }
 
 };
 

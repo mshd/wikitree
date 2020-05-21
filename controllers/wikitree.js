@@ -130,10 +130,12 @@ exports.init = function (request, callback) {
                 for (row in rows) {
                     //         // console.log(rows[row].innerHTML);
                     rows[row].innerHTML = replaceLabels(rows[row].innerHTML, labels);
+                   /*
                     //replace label for spouse
                     if (rows[row].spouse){
                         rows[row].spouse[0].innerHTML = replaceLabels(rows[row].spouse[0].innerHTML, labels);
                     }
+                    */
                 }
                 var result = processNode.result;
                 result.rows = rows;
@@ -187,21 +189,29 @@ function processLevel(data, item_id, child_id, lang, secondLang, level) {
     var newRow = processNode.createNode(data, item_id, child_id, lang, secondLang, treeType);
     newRow.stackChildren = stackChildren;
     //check Spouses
-    if (claims.P26 && level != maxLevel && treeType === "descendants" ){
-        var spouseId = claims.P26[0].value;
-        console.log(` SPOUSE EXIST for ${item_id} , the spouse is  ${spouseId} on level ${level}`);
-       
-        if (spouseId){
-            //The spouseId can be combined later
+    // i am using non simplify claims for this, because the simplify claims it's showing wrong spouse count
+    if (data.entities[item_id].claims.P26 && data.entities[item_id].claims.P26 !== undefined && level != maxLevel && treeType === "descendants" ){
+        var oldClaimSpouse = data.entities[item_id].claims.P26;
+        var spouses = [];
+        //populate all the spouses
+        Object.keys(oldClaimSpouse).forEach((key)=>{
+            var spouseId = wbk.simplify.claim(oldClaimSpouse[key]);
+            spouses.push(spouseId);
+        });
+
+        //get spouses data
+        if (spouses.length > 0 ){
             wikidataController.wikidataApi({
-                ids: [spouseId],//make labelIds unique https://futurestud.io/tutorials/node-js-get-an-array-with-unique-values-delete-duplicates
+                ids: Array.from(new Set(spouses)),
                 props: 'labels|descriptions|claims|sitelinks/urls',
-                lang: ((lang !== "en" || secondLang !== "en")? "en|" :"" ) + lang + (secondLang ? "|"+secondLang : ""), //add default english language if selected primary or second language not english
+                lang: ((lang !== "en" || secondLang !== "en") ? "en|" : "") + lang + (secondLang ? "|" + secondLang : ""),
             }, function (response) {
-                if (response.entities){
-                    var spouseNode = processNode.createNode(response, spouseId, child_id, lang, treeType);
-                    
-                    newRow['spouse'] = [spouseNode];
+                if (response.entities) {
+                    Object.keys(response.entities).forEach((key) => {
+                        //push spouses to row and add SP_ to identify the spouse connection (to be processed in treant-wikidata.js)
+                        var node = processNode.createNode(response, key, 'SP_' + item_id, lang, treeType);             
+                        rows.push(node);
+                    });
                 }
             });
         } 

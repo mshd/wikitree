@@ -28,8 +28,8 @@ var labelIds = [];
 unflatten = function (array, parent, tree) {
     tree = typeof tree !== 'undefined' ? tree : [];
     parent = typeof parent !== 'undefined' ? parent : { id: 0 };
-
-    var children = _.filter(array, function (child) { return child.parent_id == parent.id; });
+    //filter child with mother_id or father_id if it's a child node, if not continue usage parent.id
+    var children = _.filter(array, function (child) { return ((child.mother_id || child.father_id) && parent.id !== 0)? (child.mother_id == parent.id || child.father_id == parent.id) : child.parent_id == parent.id });
     if (children.length && children[0].sortValue) {
         children = children.sort(function (a, b) {
             return a.sortValue - b.sortValue
@@ -53,8 +53,40 @@ unflatten = function (array, parent, tree) {
             }
         }
     }
+    //get all the spouse with SP_ identifier we configured
+    var spouses = _.filter(array, function (spouse) { return spouse.parent_id == 'SP_'+parent.id; });
+    if (spouses.length && spouses[0].sortValue) {
+        spouses = spouses.sort(function (a, b) {
+            return a.sortValue - b.sortValue
+        })
+    }
+    if (!_.isEmpty(spouses)) {
+        if (parent.id == 0) {
+            tree = spouses;
+        } else {
+            parent['spouse'] = spouses
+        }
+        //iterate each spouse
+       _.each(spouses, function (spouse) { unflatten(array, spouse) });
+    }
+
     // console.log(children);
     if (!_.isEmpty(children)) {
+        //check if parent have spouse
+        if (parent['spouse']){
+            var spouseChildren = [];
+            
+            _.each(parent['spouse'], function(spouse){
+                //check children for each parent spouse and get it' id
+                _.each(spouse['children'], function(spouseChild){
+                    spouseChildren.push(spouseChild.id);
+                });
+            })
+            //if the parent spouse has children, filter it from children for next iteration
+            if (spouseChildren.length > 0){
+                children = _.filter(children, function (child) { return !spouseChildren.includes(child.id)});
+            }
+        }
         if (parent.id == 0) {
             tree = children;
         } else {
