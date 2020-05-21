@@ -20,6 +20,7 @@
     "moment": "^2.25.3",
     "morgan": "~1.9.1",
     "node-fetch": "^2.6.0",
+    "pm2": "^4.4.0",
     "request": "^2.88.2",
     "wikibase-sdk": "^7.4.1",
     "wikidata-sdk": "^7.4.1"
