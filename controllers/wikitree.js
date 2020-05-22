@@ -3,12 +3,14 @@ const fetch = require('node-fetch');
 const async = require('async');
 const moment = require('moment');
 const fs = require('fs');
+const NodeCache = require('node-cache');
 // var cache = require('memory-cache');
 const wikidataLang = require('../public/js/wikidataLang');
 var wikidataController = require('../controllers/wikidata');
 var processNode = require('../controllers/processNode');
 var treeType;
 var stackChildren = true;
+var dataCache = new NodeCache();
 
 var maxLevel, chartOptions = [];
 var labelIds = [];
@@ -75,78 +77,87 @@ exports.init = function (request, callback) {
     //     return;
     // }
 
-    var itemIds = {};
-    itemIds[request.root] = 0;
-    getLevel(
-        itemIds,
-        '',
-        lang,
-        secondLang,
-        maxLevel,
-        function () {
-            // console.log("DONE");
-            // console.log(rows);
-            const replaceLabels = (string, values) => string.replace(/{(.*?)}/g,
-                /*(match, offset) => (values && values[offset] && values[offset].labels && values[offset].labels[lang]) ?
-                    values[offset].labels[lang].value :
-                    (values[offset] ? values[offset].id : "??")*/
+    if(dataCache.has(cachedKey.toString())){
+        console.log("Pulling data from cache...");
+        callback(dataCache.get(cachedKey.toString()));
+    }
+    else{
+        var itemIds = {};
+        itemIds[request.root] = 0;
+        getLevel(
+            itemIds,
+            '',
+            lang,
+            secondLang,
+            maxLevel,
+            function () {
+                // console.log("DONE");
+                // console.log(rows);
+                const replaceLabels = (string, values) => string.replace(/{(.*?)}/g,
+                    /*(match, offset) => (values && values[offset] && values[offset].labels && values[offset].labels[lang]) ?
+                        values[offset].labels[lang].value :
+                        (values[offset] ? values[offset].id : "??")*/
 
-                (match, offset) => {
-                    if (values && values[offset] && values[offset].labels && values[offset].labels[lang]){
-                        return values[offset].labels[lang].value
-                    }else{
-                        if (values[offset]){
-                            //Use english label if in not defined in selected language
-                            if (values[offset].labels['en'].value){
-                                return values[offset].labels['en'].value
-                            }else{
-                                return values[offset].id 
+                    (match, offset) => {
+                        if (values && values[offset] && values[offset].labels && values[offset].labels[lang]){
+                            return values[offset].labels[lang].value
+                        }else{
+                            if (values[offset]){
+                                //Use english label if in not defined in selected language
+                                if (values[offset].labels['en'].value){
+                                    return values[offset].labels['en'].value
+                                }else{
+                                    return values[offset].id 
+                                }
+                            }else{ 
+                                return "??"
                             }
-                        }else{ 
-                            return "??"
                         }
                     }
-                }
-            );
-            //fetch labels for vars
-            //TODO no labels
-            var data = wikidataController.wikidataApi({
-                ids: Array.from(new Set(processNode.labelIds)),//make labelIds unique https://futurestud.io/tutorials/node-js-get-an-array-with-unique-values-delete-duplicates
-                props: 'labels',
-                lang: ((lang !== "en" || secondLang !== "en")? "en|" :"" ) + lang + (secondLang ? "|"+secondLang : ""), //add default english language if selected primary or second language not english
-            }, function (data) {
+                );
+                //fetch labels for vars
+                //TODO no labels
+                var data = wikidataController.wikidataApi({
+                    ids: Array.from(new Set(processNode.labelIds)),//make labelIds unique https://futurestud.io/tutorials/node-js-get-an-array-with-unique-values-delete-duplicates
+                    props: 'labels',
+                    lang: ((lang !== "en" || secondLang !== "en")? "en|" :"" ) + lang + (secondLang ? "|"+secondLang : ""), //add default english language if selected primary or second language not english
+                }, function (data) {
 
-                // console.log(data);
-                labels = data.entities;
-                console.log("Labels Count :"+ Object.keys(labels).length);
-                labels["undefined"] = {
-                    id:"null",
-                    labels:{
-                        en: "null"
+                    // console.log(data);
+                    labels = data.entities;
+                    console.log("Labels Count :"+ Object.keys(labels).length);
+                    labels["undefined"] = {
+                        id:"null",
+                        labels:{
+                            en: "null"
+                        }
+                    };
+                    labels["null"] = labels["undefined"];
+                    //     // console.log(labels);
+                    for (row in rows) {
+                        //         // console.log(rows[row].innerHTML);
+                        rows[row].innerHTML = replaceLabels(rows[row].innerHTML, labels);
+                    /*
+                        //replace label for spouse
+                        if (rows[row].spouse){
+                            rows[row].spouse[0].innerHTML = replaceLabels(rows[row].spouse[0].innerHTML, labels);
+                        }
+                        */
                     }
-                };
-                labels["null"] = labels["undefined"];
-                //     // console.log(labels);
-                for (row in rows) {
-                    //         // console.log(rows[row].innerHTML);
-                    rows[row].innerHTML = replaceLabels(rows[row].innerHTML, labels);
-                   /*
-                    //replace label for spouse
-                    if (rows[row].spouse){
-                        rows[row].spouse[0].innerHTML = replaceLabels(rows[row].spouse[0].innerHTML, labels);
-                    }
-                    */
-                }
-                var result = processNode.result;
-                result.rows = rows;
-                result.nodeImages = processNode.nodeImages;
-                // fs.writeFileSync(cachedFilename, JSON.stringify(result));
-                // memCache.put(cachedKey,result,3000*1000);
-                callback(result);
-            });
-        },
-        rows
-    );
+                    var result = processNode.result;
+                    result.rows = rows;
+                    result.nodeImages = processNode.nodeImages;
+                    // fs.writeFileSync(cachedFilename, JSON.stringify(result));
+                    // memCache.put(cachedKey,result,3000*1000);
+                    console.log("Pushing data to cache...");
+                    dataCache.set(cachedKey.toString(),result);
+
+                    callback(result);
+                });
+            },
+            rows
+        );
+    }
 };
 var childrenInLevel = {};
 function getLevel(item_ids, child_id, lang, secondLang, level, callback, rows) {
