@@ -178,6 +178,8 @@ function drawChart() {
             property: treeType,
             nocache: nocache,
             options: chartOptions,
+            spouses: (chartOptions.spouses ? 1 : 0),
+
         }, function (data) {
             rows = data.rows;
             if (!$("#searchbox").val()) {

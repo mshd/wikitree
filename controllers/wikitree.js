@@ -54,14 +54,17 @@ exports.init = function (request, callback) {
     stackChildren = true;//request.chartOptions.stackChildren ||
     //check primary selected language, change to english if not exist in default language
     lang = (request.lang in defLanguage)? request.lang : "en";
-    treeType = request.property;    
+    treeType = request.property;
+    // chartOptions = request.options;
+    chartOptions.spouses = (request.spouses === "1" ? true: false);
+    console.log("fetch spouses: "+(chartOptions.spouses?"yes":"no"));
     //Second language must in default language and not equal primary language
     secondLang = (request.secondLang in defLanguage && request.secondLang !== request.lang )? request.secondLang : null;
     if (stackChildren == "false" || treeType == "ancestors" || treeType == "owner") { stackChildren = false; }
     // let memCache = new cache.Cache();
     var nocache = request.nocache;
     //configure cached filename with second language
-    var cachedKey = "Cache"+request.root + "-L" + maxLevel + "-" + treeType + "-" + lang +(secondLang ? "-"+secondLang : '' ) + ".js";
+    var cachedKey = "Cache"+request.root + "-L" + maxLevel + "-" + treeType + "-" + lang +(secondLang ? "-"+secondLang : '' ) + (chartOptions.spouses?"addSpouses":"") + ".js";
     console.log("KEy" + cachedKey);
     cachedFilename = __dirname + '/../public/cache/' + cachedKey;
     // let cacheContent = memCache.get(cachedKey);
@@ -201,7 +204,7 @@ function processLevel(data, item_id, child_id, lang, secondLang, level) {
     newRow.stackChildren = stackChildren;
     //check Spouses
     // i am using non simplify claims for this, because the simplify claims it's showing wrong spouse count
-    if (data.entities[item_id].claims.P26 && data.entities[item_id].claims.P26 !== undefined && level != maxLevel && treeType === "descendants" ){
+    if (chartOptions && chartOptions.spouses && data.entities[item_id].claims.P26 && data.entities[item_id].claims.P26 !== undefined && level != maxLevel && treeType === "descendants" ){
         var oldClaimSpouse = data.entities[item_id].claims.P26;
         var spouses = [];
         //populate all the spouses
