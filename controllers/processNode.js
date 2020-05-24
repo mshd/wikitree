@@ -241,6 +241,7 @@ function getPeopleData(claims, newClaims, treeType) {
     if (occupationsCount > 0) {
         html += '<span class="co_index co_occupations">';
         html += "<b>💼</b> ";
+        var i = 0;
         newClaims.P106.forEach(function (claim) {
             if (i > 0) {
                 html += ", ";
