@@ -107,12 +107,12 @@ exports.init = function (request, callback) {
                         }else{
                             if (values[offset]){
                                 //Use english label if in not defined in selected language
-                                if (values[offset].labels['en'].value){
+                                if (values[offset].labels && values[offset].labels.en && values[offset].labels['en'].value){
                                     return values[offset].labels['en'].value
                                 }else{
                                     return values[offset].id 
                                 }
-                            }else{ 
+                            }else{
                                 return "??"
                             }
                         }
