@@ -253,26 +253,28 @@ function getPeopleData(claims, newClaims, treeType) {
         html += '</span>';
     }
 
-    // // number of spouses P26
-    var spousesCount = (newClaims['P26'] && newClaims['P26'].length) || 0;
-    if (spousesCount > 0) {
-        // html +="Spouse: "+number_of_spouses+ " <br>" + getSpousesNames(claims['P26']);
-        html += '<span class="co_index co_spouses">';
-        html += "<b>⚭</b> ";
-        var i = 0;
-        newClaims.P26.forEach(function (claim) {
-            if (i > 0) {
-                html += ", ";
-            } i++;
-            var qid = addLabel(claim.value);
-            if (qid) {//catch unknown value /=> null error
-                html += "{" + qid + "}";
-            }
-        });
-        html += "<br>";
-        html += '</span>';
+    // // number of spouses P26 commented already new entitiy TODO optional
+    // var spousesCount = (newClaims['P26'] && newClaims['P26'].length) || 0;
+    // if (spousesCount > 0) {
+    //     // html +="Spouse: "+number_of_spouses+ " <br>" + getSpousesNames(claims['P26']);
+    //     html += '<span class="co_index co_spouses">';
+    //     html += "<b>⚭</b> ";
+    //     var i = 0;
+    //     newClaims.P26.forEach(function (claim) {
+    //         if (i > 0) {
+    //             html += ", ";
+    //         } i++;
+    //         var qid = addLabel(claim.value);
+    //         if (qid) {//catch unknown value /=> null error
+    //             html += "{" + qid + "}";
+    //         }
+    //     });
+    //     html += "<br>";
+    //     html += '</span>';
+    //
+    // }
 
-    }
+
     if (newClaims['P69']) {
         html += '<span class="co_index co_education">';
 
