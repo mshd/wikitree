@@ -168,8 +168,12 @@ function drawChart() {
             progressBar.progressbar('value',i);
         }
     }
-
-    $.getJSON('/createtree',
+    console.log(window.location.hostname);
+    var createtreeUrl = '/createtree';
+    if(window.location.hostname === "github"){
+        createtreeUrl = 'http://116.203.111.168:3000/createtree?callback=?';
+    }
+    $.getJSON(createtreeUrl,
         {
             root: root,
             lang: lang,
