@@ -170,7 +170,7 @@ function drawChart() {
     }
     console.log(window.location.hostname);
     var createtreeUrl = '/createtree';
-    if(window.location.hostname === "github"){
+    if(window.location.hostname === "dataprick.github.io"){
         createtreeUrl = 'http://116.203.111.168:3000/createtree?callback=?';
     }
     $.getJSON(createtreeUrl,
