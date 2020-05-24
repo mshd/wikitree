@@ -15,7 +15,7 @@ router.get('/', function(req, res, next) {
 
 router.get('/createtree', function(req, res, next) {
     var results = wikitree.init(req.query,function (results) {
-        res.json(results);
+        res.jsonp(results);
     });
    // var wikidata = wikidataController.wikidataApi({
    //     ids: [ 'Q1', 'Q5', 'Q571' ]
