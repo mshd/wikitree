@@ -229,12 +229,12 @@ function getPeopleData(claims, newClaims, treeType) {
         html += '<br />';
     }
 
-    if (burialDate || burialPlace) {
-        html += "⎧ᴿᴵᴾ⎫ ";
-        html += (burialDate ? burialDate + " " : "");
-        html += (burialPlace ? "{" + burialPlace + "}" : "");
-        html += "<br />";
-    }
+    // if (burialDate || burialPlace) {
+    //     html += "⎧ᴿᴵᴾ⎫ ";
+    //     html += (burialDate ? burialDate + " " : "");
+    //     html += (burialPlace ? "{" + burialPlace + "}" : "");
+    //     html += "<br />";
+    // }
 
     // // number of occupations P106
     var occupationsCount = (newClaims['P106'] && newClaims['P106'].length) || 0;
