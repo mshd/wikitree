@@ -96,7 +96,7 @@ unflatten = function (array, parent, tree) {
     }
 
     return tree;
-}
+};
 function selectFormField(name, value) {
     $("form#search select[name='" + name + "'] option").filter(function () { return $(this).html() == value; }).attr('selected', 'selected');
 }
@@ -190,6 +190,7 @@ function drawChart() {
             var treeStructure = unflatten(rows);
             treeStructure = treeStructure[0];
             console.log(treeStructure);
+            console.log(JSON.stringify(treeStructure));
 
             var chart_config = {
                 chart: {
