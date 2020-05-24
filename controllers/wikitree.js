@@ -80,7 +80,7 @@ exports.init = function (request, callback) {
     //     return;
     // }
 
-    if(dataCache.has(cachedKey.toString())){
+    if(dataCache.has(cachedKey.toString()) && nocache != '1'){
         console.log("Pulling data from cache...");
         callback(dataCache.get(cachedKey.toString()));
     }
