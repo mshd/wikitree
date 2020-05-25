@@ -7,6 +7,7 @@ exports.result = {
     root: null,
 };
 exports.labelIds = [];
+exports.ownValue = [];
 exports.createNode = function (data, item_id, child_id, lang, secondLang, treeType) {
 
     // data.entities = data;
@@ -105,6 +106,7 @@ exports.createNode = function (data, item_id, child_id, lang, secondLang, treeTy
             className = 'node-thirdgender';
         }
     }
+    var html = '<p class="node-name">';
     //get father_id and mother_id if descendants
     if(treeType === "descendants"){
         var father_id;
@@ -118,8 +120,36 @@ exports.createNode = function (data, item_id, child_id, lang, secondLang, treeTy
         if (claims['P25']) {
             mother_id = claims['P25'][0].value;
         }
+    }else if (treeType === "owner"){
+        //add percentage value to array to be used on next child iteration
+        if (claims['P127']){
+            //get owner ids and the value
+            claims['P127'].forEach((item)=>exports.ownValue.push(item));
+        }
+        //check if exist
+        var value_exist = exports.ownValue.find(x => x.value == item_id)
+        if (value_exist){
+            // add percentages value only if the value exist
+            if (value_exist.qualifiers && value_exist.qualifiers.P1107){
+                html += '<span class="float-right" style="margin-top:-20px;">'+ parseFloat(exports.ownValue.find(x => x.value == item_id).qualifiers.P1107[0])*100+' %</span>';
+            }
+        }
+    }else if (treeType === "owns"){
+        //add percentage value to array to be used on next child iteration
+        if (claims['P355']){
+            //get owner ids and the value
+            claims['P355'].forEach((item)=>exports.ownValue.push(item));
+        }
+        //check if exist
+        var value_exist = exports.ownValue.find(x => x.value == item_id)
+        if (value_exist){
+            // add percentages value only if the value exist
+            if (value_exist.qualifiers && value_exist.qualifiers.P1107){
+                html += '<span class="float-right" style="margin-top:-20px;">'+ parseFloat(exports.ownValue.find(x => x.value == item_id).qualifiers.P1107[0])*100+' %</span>';
+            }
+        }
     }
-    var html = '<p class="node-name">';
+    
     //name in selected language
     var langName = data.entities[item_id].sitelinks && data.entities[item_id].sitelinks[lang + "wiki"];
     //name in english language

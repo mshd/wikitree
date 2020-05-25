@@ -46,6 +46,7 @@ exports.init = function (request, callback) {
     //Init container data
     rows =[];
     labelIds = [];
+    processNode.ownValue = [];
     processNode.nodeImages = [];
     processNode.result.root = null;
 
