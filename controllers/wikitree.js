@@ -83,7 +83,7 @@ exports.init = function (request, callback) {
 
     if(dataCache.has(cachedKey.toString()) && nocache != '1'){
         console.log("Pulling data from cache...");
-        callback(dataCache.get(cachedKey.toString()));
+        callback(null,dataCache.get(cachedKey.toString()));
     }
     else{
         var itemIds = {};
@@ -94,8 +94,11 @@ exports.init = function (request, callback) {
             lang,
             secondLang,
             maxLevel,
-            function () {
-                // console.log("DONE");
+            function (err) {
+                if (err){
+                    callback(err,null);
+                    return;
+                }
                 // console.log(rows);
                 const replaceLabels = (string, values) => string.replace(/{(.*?)}/g,
                     /*(match, offset) => (values && values[offset] && values[offset].labels && values[offset].labels[lang]) ?
@@ -125,28 +128,34 @@ exports.init = function (request, callback) {
                     ids: Array.from(new Set(processNode.labelIds)),//make labelIds unique https://futurestud.io/tutorials/node-js-get-an-array-with-unique-values-delete-duplicates
                     props: 'labels',
                     lang: ((lang !== "en" || secondLang !== "en")? "en|" :"" ) + lang + (secondLang ? "|"+secondLang : ""), //add default english language if selected primary or second language not english
-                }, function (data) {
-
+                }, function (err,data) {
+                    if (err){
+                        callback(err,null);
+                        return;
+                    }
                     // console.log(data);
-                    labels = data.entities;
-                    console.log("Labels Count :"+ Object.keys(labels).length);
-                    labels["undefined"] = {
-                        id:"null",
-                        labels:{
-                            en: "null"
+                    labels = {};
+                    if (data != null){
+                        labels = data.entities;
+                        console.log("Labels Count :"+ Object.keys(labels).length);
+                        labels["undefined"] = {
+                            id:"null",
+                            labels:{
+                                en: "null"
+                            }
+                        };
+                        labels["null"] = labels["undefined"];
+                        //     // console.log(labels);
+                        for (row in rows) {
+                            //         // console.log(rows[row].innerHTML);
+                            rows[row].innerHTML = replaceLabels(rows[row].innerHTML, labels);
+                        /*
+                            //replace label for spouse
+                            if (rows[row].spouse){
+                                rows[row].spouse[0].innerHTML = replaceLabels(rows[row].spouse[0].innerHTML, labels);
+                            }
+                            */
                         }
-                    };
-                    labels["null"] = labels["undefined"];
-                    //     // console.log(labels);
-                    for (row in rows) {
-                        //         // console.log(rows[row].innerHTML);
-                        rows[row].innerHTML = replaceLabels(rows[row].innerHTML, labels);
-                    /*
-                        //replace label for spouse
-                        if (rows[row].spouse){
-                            rows[row].spouse[0].innerHTML = replaceLabels(rows[row].spouse[0].innerHTML, labels);
-                        }
-                        */
                     }
                     var result = processNode.result;
                     result.rows = rows;
@@ -156,7 +165,7 @@ exports.init = function (request, callback) {
                     console.log("Pushing data to cache...");
                     dataCache.set(cachedKey.toString(),result);
 
-                    callback(result);
+                    callback(null,result);
                 });
             },
             rows
@@ -172,9 +181,13 @@ function getLevel(item_ids, child_id, lang, secondLang, level, callback, rows) {
     }
     wikidataController.wikidataApi({
         ids: Object.keys(item_ids),
-        // props : 'labels|descriptions|claims|sitelinks/urls' ,
+        props : 'labels|descriptions|claims|sitelinks/urls' ,
         lang: ((lang !== "en" || secondLang !== "en")? "en|" :"" ) + lang + (secondLang ? "|"+secondLang : ""), //add default english language if selected primary or second language not english
-    }, function (data, items) {
+    }, function (err, data, items) {
+        if (err){
+            callback(err,null);
+            return;
+        }
         childrenInLevel = {};
         for(var item_id in data.entities){
             processLevel(data, item_id, item_ids[item_id], lang, secondLang, level, callback, rows);
@@ -220,7 +233,7 @@ function processLevel(data, item_id, child_id, lang, secondLang, level) {
                 ids: Array.from(new Set(spouses)),
                 props: 'labels|descriptions|claims|sitelinks/urls',
                 lang: ((lang !== "en" || secondLang !== "en") ? "en|" : "") + lang + (secondLang ? "|" + secondLang : ""),
-            }, function (response) {
+            }, function (err,response) {
                 if (response.entities) {
                     Object.keys(response.entities).forEach((key) => {
                         //push spouses to row and add SP_ to identify the spouse connection (to be processed in treant-wikidata.js)
@@ -246,7 +259,7 @@ function processLevel(data, item_id, child_id, lang, secondLang, level) {
                 ids: Array.from(new Set(siblings)),//make labelIds unique https://futurestud.io/tutorials/node-js-get-an-array-with-unique-values-delete-duplicates
                 props: 'labels|descriptions|claims|sitelinks/urls',
                 lang: ((lang !== "en" || secondLang !== "en")? "en|" :"" ) + lang + (secondLang ? "|"+secondLang : ""), //add default english language if selected primary or second language not english
-            }, function (response) {
+            }, function (err,response) {
                 if (response.entities){
                     Object.keys(response.entities).forEach((key)=>{
                         //push siblings to row and add S_ to identify the sibling connection (to be processed in treant-wikidata.js)

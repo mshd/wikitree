@@ -238,6 +238,11 @@ function drawChart() {
                     $(this).attr('src', images[1][images[0]].url);
                 }
             });
+        }).fail(function( jqxhr ) {
+            //finish progressbar and show error
+            $("#progressbar").progressbar({ value: 100 });
+            console.log("Error processing data " +jqxhr.responseJSON.error);
+            alert("Error processing data, please try again");
         });
 }
 function getUrlVars() {

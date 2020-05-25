@@ -10,7 +10,8 @@ exports.wikidataApi = function(para, callback, wait) {
     }
 
     if(para.ids.length === 0){
-        callback(null);
+        callback(null,null);
+        return;
     }
     const urls = wbk.getManyEntities({
         ids: para.ids,
@@ -27,10 +28,10 @@ exports.wikidataApi = function(para, callback, wait) {
             // .then(wbk.parse.wd.entities)
             .then(entities => {
                 // console.log(entities);
-                callback(entities);
+                callback(null,entities);
                 // return entities;
-            });
-            // .catch(error => console.log("ERROR fetch in Wikidata.js :"+error.message)); //add Error catch
+            }).catch(error =>{ console.log("ERROR fetch in Wikidata.js :"+error.message); callback(new Error("ERROR fetch in Wikidata.js :"+error.message),null); }); //add Error catch
+            //https://nodejs.org/api/errors.html#errors_error_first_callbacks
     }else{
         //https://stackoverflow.com/questions/31710768/how-can-i-fetch-an-array-of-urls-with-promise-all
         //map all requests and emerge the entities
@@ -43,10 +44,9 @@ exports.wikidataApi = function(para, callback, wait) {
                     entities[index] = texts[text].entities[index];
                 }
             }
-            callback({entities: entities});
+            callback(null,{entities: entities});
 
-        });
-            //.catch(error => console.log("Error Promise in wikidata.js : "+error.message)); //add Error catch
+        }).catch(error => {console.log("Error Promise in wikidata.js : "+error.message); callback(new Error("Error Promise in wikidata.js : "+error.message),null);}); //add Error catch
     }
 
 };

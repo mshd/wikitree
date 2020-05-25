@@ -111,13 +111,13 @@ exports.createNode = function (data, item_id, child_id, lang, secondLang, treeTy
     if(treeType === "descendants"){
         var father_id;
         //father P22
-        if (claims['P22']) {
+        if (claims['P22'] && claims['P22'].length > 0) {
             father_id = claims['P22'][0].value;
         }
 
         var mother_id;
         //mother P25
-        if (claims['P25']) {
+        if (claims['P25'] && claims['P25'].length > 0) {
             mother_id = claims['P25'][0].value;
         }
     }else if (treeType === "owner"){
