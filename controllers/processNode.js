@@ -48,7 +48,7 @@ exports.createNode = function (data, item_id, child_id, lang, secondLang, treeTy
         }
     }
     // console.log(claims['P154']);
-    if (claims['P154']) {//logo propery
+    if (claims['P154'] && claims['P154'][0]) {//logo propery
         images.push({
             'url': 'https://commons.wikimedia.org/wiki/Special:FilePath/' + claims['P154'][0].value + '?width=100px',
         });
