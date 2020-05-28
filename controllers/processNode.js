@@ -7,6 +7,7 @@ exports.result = {
     root: null,
 };
 exports.labelIds = [];
+exports.birthAndDeathPlace = [];
 exports.ownValue = [];
 exports.createNode = function (data, item_id, child_id, lang, secondLang, treeType) {
 
@@ -218,12 +219,12 @@ function getPeopleData(claims, newClaims, treeType) {
 
     // date of birth P569
     var birthDate = (newClaims.P569 && newClaims.P569[0].value !== undefined  ? parseDate2(newClaims.P569[0].value) : null);
-    var birthPlace = addLabel(newClaims['P19']);
+    var birthPlace = addLabel(newClaims['P19'],'BD');
     var sortValue = null;
 
     // date of death P570
     var deathDate = (newClaims.P570 && newClaims.P570[0].value !== undefined ? (parseDate2(newClaims.P570[0].value).output) : null);
-    var deathPlace = addLabel(newClaims['P20']);
+    var deathPlace = addLabel(newClaims['P20'],'BD');
 
     // burial date P4602, burial place P119
     var burialDate = (newClaims.P4602 && newClaims.P4602[0].value !== undefined ? (parseDate2(newClaims.P4602[0].value)) : null);
@@ -459,11 +460,13 @@ function getValue(claim) {
 }
 
 
-function addLabel(claim) {
+function addLabel(claim,type = null) {
     if (claim && Array.isArray(claim) && claim.length > 0) {
         claim = claim[0].value;
     }
     if (claim) {//&& labelIds.indexOf(value) == -1
+        if (type == 'BD')
+            exports.birthAndDeathPlace.push(claim);
         exports.labelIds.push(claim);
     }
     return claim;
