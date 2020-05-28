@@ -66,26 +66,26 @@ exports.createNode = function (data, item_id, child_id, lang, secondLang, treeTy
     var itemIdNumber = item_id.substr(1);
 
     //TODO adding ImageURL from external file
-    if (thirdPartyImages.imageURLS[itemIdNumber]) {
-        images.push({ 'url': thirdPartyImages.imageURLS[itemIdNumber] });
-    }
+    // if (thirdPartyImages.imageURLS[itemIdNumber]) {
+    //     images.push({ 'url': thirdPartyImages.imageURLS[itemIdNumber] });
+    // }
     // Get from wikipedia images if there is no image
-    if (images.length == 0) {
-        //check if has wikipedia name, and set the name and id to be fetch in the client side;
-        if (data.entities[item_id].sitelinks && data.entities[item_id].sitelinks[lang + "wiki"]) {
-            var wikipediaName = data.entities[item_id].sitelinks[lang + "wiki"].url.split('/wiki/')[1];
-            //Async Await the response fetch
-            const getImage = async () => {
-                const response = await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + wikipediaName);
-                const json = await response.json();
-                if (json.thumbnail) {
-                    console.log(json.thumbnail.source);
-                    images.push({ 'url': json.thumbnail.source });
-                }
-            }
-            getImage().catch(error => console.log("Error get Wikipedia Image : "+error.message)); //add Error catch
-        }
-    }
+    // if (images.length == 0) {
+    //     //check if has wikipedia name, and set the name and id to be fetch in the client side;
+    //     if (data.entities[item_id].sitelinks && data.entities[item_id].sitelinks[lang + "wiki"]) {
+    //         var wikipediaName = data.entities[item_id].sitelinks[lang + "wiki"].url.split('/wiki/')[1];
+    //         //Async Await the response fetch
+    //         const getImage = async () => {
+    //             const response = await fetch("https://en.wikipedia.org/api/rest_v1/page/summary/" + wikipediaName);
+    //             const json = await response.json();
+    //             if (json.thumbnail) {
+    //                 console.log(json.thumbnail.source);
+    //                 images.push({ 'url': json.thumbnail.source });
+    //             }
+    //         }
+    //         getImage().catch(error => console.log("Error get Wikipedia Image : "+error.message)); //add Error catch
+    //     }
+    // }
     // gender P21
     var className = "";
 
