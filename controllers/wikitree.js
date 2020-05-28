@@ -48,6 +48,7 @@ exports.init = function (request, callback) {
     labelIds = [];
     processNode.ownValue = [];
     processNode.nodeImages = [];
+    processNode.birthAndDeathPlace = [];
     processNode.result.root = null;
 
     //set MaxLevel to Global so it can be accessed 
@@ -126,17 +127,15 @@ exports.init = function (request, callback) {
                 //TODO no labels
                 var data = wikidataController.wikidataApi({
                     ids: Array.from(new Set(processNode.labelIds)),//make labelIds unique https://futurestud.io/tutorials/node-js-get-an-array-with-unique-values-delete-duplicates
-                    props: 'labels',
+                    props: 'labels|claims',
                     lang: ((lang !== "en" || secondLang !== "en")? "en|" :"" ) + lang + (secondLang ? "|"+secondLang : ""), //add default english language if selected primary or second language not english
                 }, function (err,data) {
                     if (err){
                         callback(err,null);
                         return;
                     }
-                    // console.log(data);
-                    labels = {};
-                    if (data != null){
-                        labels = data.entities;
+                    //Process Label
+                    function processLabel(){
                         console.log("Labels Count :"+ Object.keys(labels).length);
                         labels["undefined"] = {
                             id:"null",
@@ -145,27 +144,90 @@ exports.init = function (request, callback) {
                             }
                         };
                         labels["null"] = labels["undefined"];
-                        //     // console.log(labels);
                         for (row in rows) {
-                            //         // console.log(rows[row].innerHTML);
                             rows[row].innerHTML = replaceLabels(rows[row].innerHTML, labels);
-                        /*
-                            //replace label for spouse
-                            if (rows[row].spouse){
-                                rows[row].spouse[0].innerHTML = replaceLabels(rows[row].spouse[0].innerHTML, labels);
-                            }
-                            */
                         }
                     }
-                    var result = processNode.result;
-                    result.rows = rows;
-                    result.nodeImages = processNode.nodeImages;
-                    // fs.writeFileSync(cachedFilename, JSON.stringify(result));
-                    // memCache.put(cachedKey,result,3000*1000);
-                    console.log("Pushing data to cache...");
-                    dataCache.set(cachedKey.toString(),result);
 
-                    callback(null,result);
+                    //Process Result
+                    function processResult(){
+                        var result = processNode.result;
+                        result.rows = rows;
+                        result.nodeImages = processNode.nodeImages;
+                        // fs.writeFileSync(cachedFilename, JSON.stringify(result));
+                        // memCache.put(cachedKey,result,3000*1000);
+                        console.log("Pushing data to cache...");
+                        dataCache.set(cachedKey.toString(),result);
+
+                        callback(null,result);
+                    }
+
+                    // console.log(data);
+                    labels = {};
+                    if (data != null){
+                        labels = data.entities;
+                        var labelChange = [];
+                        var keyChange = [];
+                        const birthDeathPlace = Array.from(new Set(processNode.birthAndDeathPlace));
+                        //iterate each of the place of birth and death label to see if it's instance of hospital
+                        birthDeathPlace.forEach((key)=>{
+                            const claims = wbk.simplify.claims(labels[key].claims);
+                             //check if it's instance of Hospital
+                             if (claims.P31 && claims.P31 == 'Q16917'){
+                                if (claims.P131){
+                                    //use administrative territorial entity P131 if exist
+                                    labelChange.push(claims.P131[0]);
+                                    keyChange[claims.P131[0]] = key;
+                                }else if (claims.P276){
+                                    //or use location P276 if entity P131 not exist
+                                    labelChange.push(claims.P276[0]);
+                                    keyChange[claims.P276[0]] = key;
+                                }
+                            }
+                        });
+
+                        //check if need to further change the label (if instance of hospital)
+                        if (labelChange.length > 0 ){
+                            console.log("Get city/country label");
+                            //Branch 1 : wait for promise to get the city/country label
+                            function promiseWrapper() {
+                                return new Promise((resolve, reject) => {
+                                    wikidataController.wikidataApi({
+                                        ids: Array.from(new Set(labelChange)),//make labelIds unique https://futurestud.io/tutorials/node-js-get-an-array-with-unique-values-delete-duplicates
+                                        props: 'labels|claims',
+                                        lang: ((lang !== "en" || secondLang !== "en")? "en|" :"" ) + lang + (secondLang ? "|"+secondLang : ""), //add default english language if selected primary or second language not english
+                                    }, function (err,data) {
+                                        if (err){
+                                            console.log(err);
+                                            reject(err);
+                                        }
+                                        resolve(data);
+                                    });
+                                });
+                            }
+                            async function list() {
+                                const newLabels = await promiseWrapper();
+                                if (Object.keys(newLabels.entities).length){
+                                    Object.keys(newLabels.entities).forEach((key)=>{
+                                        labels[keyChange[key]]=newLabels.entities[key];
+                                    });
+                                }
+                            }
+                            list()
+                                .catch(e => console.error(e))
+                                .finally(()=>{
+                                    processLabel();
+                                    processResult();
+                                });
+                        }else{
+                            //Branch 2 : process label as usual
+                            processLabel();
+                            processResult();
+                         }
+                    }else{
+                        //Branch 3 : continue without label processing
+                        processResult();
+                    }
                 });
             },
             rows
