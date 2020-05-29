@@ -8,6 +8,7 @@ const NodeCache = require('node-cache');
 const wikidataLang = require('../public/js/wikidataLang');
 var wikidataController = require('../controllers/wikidata');
 var processNode = require('../controllers/processNode');
+const wikitree = require('../controllers/thirdsources/wikitree');
 var treeType;
 var stackChildren = true;
 var dataCache = new NodeCache();
@@ -347,23 +348,19 @@ function processLevel(data, item_id, child_id, lang, secondLang, level) {
         if (claims['P2949'] && claims['P2949'][0]){
             var objIndex = rows.findIndex((row => row.id == item_id));
             console.log("Get wikitree image");
-            fetch('https://api.wikitree.com/api.php?action=getProfile&key='+claims['P2949'][0].value+'&fields=Photo')
-                .then(response => response.json())
-                .then(data => {
-                    if (data && data[0].profile.PhotoData){
-                        const imageUrl = 'https://wikitree.com' + data[0].profile.PhotoData.url + '';
-                        //console.log("image : "+imageUrl);
-                        processNode.nodeImages[item_id] = [0, [{
-                            'url': imageUrl,
-                            'source': "Wikitree",
-                        }]];
-                        //add image on top of innerHTML
-                        rows[objIndex].innerHTML = '<img class="node_image" id="image_' + item_id + '" data-item="' + item_id + '" alt="" src="' + imageUrl + '">' + rows[objIndex].innerHTML;
-                    }
-                })
-                .catch(err => {
-                    console.log("Error Get wikitree image : "+err);
-                });
+            var wikitreeId = claims['P2949'][0].value;
+            wikitree.getProfilePic(wikitreeId, function(data){
+                if (data && data[0].profile.PhotoData){
+                    const imageUrl = 'https://wikitree.com' + data[0].profile.PhotoData.url + '';
+                    //console.log("image : "+imageUrl);
+                    processNode.nodeImages[item_id] = [0, [{
+                        'url': imageUrl,
+                        'source': "Wikitree",
+                    }]];
+                    //add image on top of innerHTML
+                    rows[objIndex].innerHTML = '<img class="node_image" id="image_' + item_id + '" data-item="' + item_id + '" alt="" src="' + imageUrl + '">' + rows[objIndex].innerHTML;
+                }
+            });
         }
     }
     // console.log(duplicates);
