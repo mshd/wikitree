@@ -2,12 +2,12 @@ const wbk = require('wikidata-sdk');
 const fetch = require('node-fetch');
 
 exports.wikidataApi = function(para, callback, wait) {
-    if(wait === undefined){
-        setTimeout(function () {
-            exports.wikidataApi(para,callback,true);
-        },1500);
-        return;
-    }
+    // if(wait === undefined){
+    //     setTimeout(function () {
+    //         exports.wikidataApi(para,callback,true);
+    //     },1500);
+    //     return;
+    // }
 
     if(para.ids.length === 0){
         callback(null,null);
