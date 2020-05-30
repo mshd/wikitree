@@ -344,7 +344,7 @@ function processLevel(data, item_id, child_id, lang, secondLang, level) {
     console.log("Push new row : "+ item_id);
     rows.push(newRow);
     //check if there is not image exist, call wikitree image;
-    if (!newRow.innerHTML.includes('node_image')){
+    if (false && !newRow.innerHTML.includes('node_image')){//TODO fix https://github.com/dataprick/wikitree/issues/9
         if (claims['P2949'] && claims['P2949'][0]){
             var objIndex = rows.findIndex((row => row.id == item_id));
             console.log("Get wikitree image");
