@@ -95,11 +95,11 @@ exports.createNode = function (data, item_id, child_id, lang, secondLang, treeTy
     if (claims['P21']) {
         var gender_id = parseInt((claims['P21'][0].value).substr(1));
         var gender_html = '';
-        if (gender_id === 6581097) {
-            sortValue = 0;
+        if (gender_id === 6581097 || gender_id === 44148) {
+            sortValue=0;
             gender_html = '<i class="fa fa-mars"></i>';
             className = 'node-male'
-        } else if (gender_id === 6581072) {
+        } else if (gender_id === 6581072 || gender_id === 43445) {
             sortValue = 1;
             gender_html = '<i class="fa fa-venus"></i>';
             className = 'node-female'
