@@ -60,7 +60,7 @@ exports.init = function (request, callback) {
     treeType = request.property;
     // chartOptions = request.options;
     chartOptions.spouses = (request.spouses === "1" ? true: false);
-    console.log("fetch spouses: "+(chartOptions.spouses?"yes":"no"));
+    // console.log("fetch spouses: "+(chartOptions.spouses?"yes":"no"));
     //Second language must in default language and not equal primary language
     secondLang = (request.secondLang in defLanguage && request.secondLang !== request.lang )? request.secondLang : null;
     if (stackChildren == "false" || treeType == "ancestors" || treeType == "owner") { stackChildren = false; }
@@ -68,7 +68,7 @@ exports.init = function (request, callback) {
     var nocache = request.nocache;
     //configure cached filename with second language
     var cachedKey = "Cache"+request.root + "-L" + maxLevel + "-" + treeType + "-" + lang +(secondLang ? "-"+secondLang : '' ) + (chartOptions.spouses?"addSpouses":"") + ".js";
-    console.log("KEy" + cachedKey);
+    // console.log("KEy" + cachedKey);
     cachedFilename = __dirname + '/../public/cache/' + cachedKey;
     // let cacheContent = memCache.get(cachedKey);
     // if(cacheContent && nocache != '1'){
@@ -84,7 +84,7 @@ exports.init = function (request, callback) {
     // }
 
     if(dataCache.has(cachedKey.toString()) && nocache != '1'){
-        console.log("Pulling data from cache...");
+        // console.log("Pulling data from cache...");
         callback(null,dataCache.get(cachedKey.toString()));
     }
     else{
@@ -341,7 +341,7 @@ function processLevel(data, item_id, child_id, lang, secondLang, level) {
     //     }
     // ];
     var duplicates = rows.some(o => o.id === item_id);
-    console.log("Push new row : "+ item_id);
+    // console.log("Push new row : "+ item_id);
     rows.push(newRow);
     //check if there is not image exist, call wikitree image;
     if (false && !newRow.innerHTML.includes('node_image')){//TODO fix https://github.com/dataprick/wikitree/issues/9
