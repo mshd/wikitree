@@ -495,10 +495,10 @@
       console.log("start");
       var e = $(e);
       e.off('hover');
-      $.get("https://"+lang+".wikipedia.org/api/rest_v1/page/summary/" + e.attr("data-wiki"), function (d) {
+      $.get("https://"+lang+".wikipedia.org/api/rest_v1/page/summary/" + e.attr("data-wiki") , function (d) { //+"?redirect=false"
         e.popover({
           html: true,
-          content: '<div class="wikipediatext">' + d.extract_html + '</div>' + (d.thumbnail ? '<img src="' + d.thumbnail.source + '" width="100%" />' : '') + '<a href="https://www.wikidata.org/wiki/Q' + e.attr("data-id") + '" target="_blank">Wikidata</a> - <a href="https://en.wikipedia.org/wiki/' + e.attr("data-wiki") + '" target="_blank">Wikipedia</a>' + (first ? ' - <a href="' + first + '" target="_blank">Offical Website</a>' : '') + (table ? ' - <a href="/compare/' + table + '?Q82799=' + e.text() + '" target="_blank">' + table + ' table</a>' : '')
+          content: (e.attr("data-wiki") === d.titles.canonical ? '<div class="wikipediatext">' + d.extract_html + '</div>' + (d.thumbnail ? '<img src="' + d.thumbnail.source + '" width="100%" />' : '') : "") + '<a href="https://www.wikidata.org/wiki/Q' + e.attr("data-id") + '" target="_blank">Wikidata</a> - <a href="https://en.wikipedia.org/wiki/' + e.attr("data-wiki") + '" target="_blank">Wikipedia</a>' + (first ? ' - <a href="' + first + '" target="_blank">Offical Website</a>' : '') + (table ? ' - <a href="/compare/' + table + '?Q82799=' + e.text() + '" target="_blank">' + table + ' table</a>' : '')
 
         }).popover('show');
       });
