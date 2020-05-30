@@ -95,12 +95,12 @@ exports.createNode = function (data, item_id, child_id, lang, secondLang, treeTy
 
     if (claims['P21']) {
         var gender_id = parseInt((claims['P21'][0].value).substr(1));
-        var gender_html = '';
-        if (gender_id === 6581097) {
-            sortValue = 0;
+        var gender_html = gender_id+ ' ';
+        if (gender_id === 6581097 || gender_id === 44148) {
+            sortValue=0;
             gender_html = '<i class="fa fa-mars"></i>';
             className = 'node-male'
-        } else if (gender_id === 6581072) {
+        } else if (gender_id === 6581072 || gender_id === 43445) {
             sortValue = 1;
             gender_html = '<i class="fa fa-venus"></i>';
             className = 'node-female'
@@ -478,7 +478,18 @@ function getYearOfQualifier(q) {
 }
 
 
-},{"../public/storage/images":41,"moment":7,"node-fetch":10,"wikidata-sdk":39}],2:[function(require,module,exports){
+},{"../public/storage/images":42,"moment":8,"node-fetch":11,"wikidata-sdk":40}],2:[function(require,module,exports){
+const fetch = require('node-fetch');
+exports.getProfilePic = function (id, callback){//getValue(claims['P2600'])
+    var url = "https://api.wikitree.com/api.php?action=getProfile&key=" + id  +"&fields=Photo";
+    fetch(url)
+        .then(response => response.json())
+        .then(entities => {
+            callback(entities);
+            //TODO get only image
+        });
+};
+},{"node-fetch":11}],3:[function(require,module,exports){
 const wbk = require('wikidata-sdk');
 const fetch = require('node-fetch');
 
@@ -508,11 +519,10 @@ exports.wikidataApi = function(para, callback, wait) {
             .then(response => response.json())
             // .then(wbk.parse.wd.entities)
             .then(entities => {
-                console.log(entities);
                 callback(null,entities);
                 // return entities;
             })
-            // .catch(error =>{ console.log("ERROR fetch in Wikidata.js :"+error.message); callback(new Error("ERROR fetch in Wikidata.js :"+error.message),null); }); //add Error catch
+            .catch(error =>{ console.log("ERROR fetch in Wikidata.js :"+error.message); callback(new Error("ERROR fetch in Wikidata.js :"+error.message),null); }); //add Error catch
             //https://nodejs.org/api/errors.html#errors_error_first_callbacks
     }else{
         //https://stackoverflow.com/questions/31710768/how-can-i-fetch-an-array-of-urls-with-promise-all
@@ -529,11 +539,11 @@ exports.wikidataApi = function(para, callback, wait) {
             callback(null,{entities: entities});
 
         })
-            // .catch(error => {console.log("Error Promise in wikidata.js : "+error.message); callback(new Error("Error Promise in wikidata.js : "+error.message),null);}); //add Error catch
+            .catch(error => {console.log("Error Promise in wikidata.js : "+error.message); callback(new Error("Error Promise in wikidata.js : "+error.message),null);}); //add Error catch
     }
 
 };
-},{"node-fetch":10,"wikidata-sdk":39}],3:[function(require,module,exports){
+},{"node-fetch":11,"wikidata-sdk":40}],4:[function(require,module,exports){
 (function (__dirname){
 const wbk = require('wikidata-sdk');
 const fetch = require('node-fetch');
@@ -545,6 +555,7 @@ const NodeCache = require('node-cache');
 const wikidataLang = require('../public/js/wikidataLang');
 var wikidataController = require('../controllers/wikidata');
 var processNode = require('../controllers/processNode');
+const wikitree = require('../controllers/thirdsources/wikitree');
 var treeType;
 var stackChildren = true;
 var dataCache = new NodeCache();
@@ -596,7 +607,7 @@ exports.init = function (request, callback) {
     treeType = request.property;
     // chartOptions = request.options;
     chartOptions.spouses = (request.spouses === "1" ? true: false);
-    console.log("fetch spouses: "+(chartOptions.spouses?"yes":"no"));
+    // console.log("fetch spouses: "+(chartOptions.spouses?"yes":"no"));
     //Second language must in default language and not equal primary language
     secondLang = (request.secondLang in defLanguage && request.secondLang !== request.lang )? request.secondLang : null;
     if (stackChildren == "false" || treeType == "ancestors" || treeType == "owner") { stackChildren = false; }
@@ -604,7 +615,7 @@ exports.init = function (request, callback) {
     var nocache = request.nocache;
     //configure cached filename with second language
     var cachedKey = "Cache"+request.root + "-L" + maxLevel + "-" + treeType + "-" + lang +(secondLang ? "-"+secondLang : '' ) + (chartOptions.spouses?"addSpouses":"") + ".js";
-    console.log("KEy" + cachedKey);
+    // console.log("KEy" + cachedKey);
     cachedFilename = __dirname + '/../public/cache/' + cachedKey;
     // let cacheContent = memCache.get(cachedKey);
     // if(cacheContent && nocache != '1'){
@@ -620,7 +631,7 @@ exports.init = function (request, callback) {
     // }
 
     if(dataCache.has(cachedKey.toString()) && nocache != '1'){
-        console.log("Pulling data from cache...");
+        // console.log("Pulling data from cache...");
         callback(null,dataCache.get(cachedKey.toString()));
     }
     else{
@@ -877,30 +888,26 @@ function processLevel(data, item_id, child_id, lang, secondLang, level) {
     //     }
     // ];
     var duplicates = rows.some(o => o.id === item_id);
-    console.log("Push new row : "+ item_id);
+    // console.log("Push new row : "+ item_id);
     rows.push(newRow);
     //check if there is not image exist, call wikitree image;
-    if (!newRow.innerHTML.includes('node_image')){
+    if (false && !newRow.innerHTML.includes('node_image')){//TODO fix https://github.com/dataprick/wikitree/issues/9
         if (claims['P2949'] && claims['P2949'][0]){
             var objIndex = rows.findIndex((row => row.id == item_id));
             console.log("Get wikitree image");
-            fetch('https://api.wikitree.com/api.php?action=getProfile&key='+claims['P2949'][0].value+'&fields=Photo')
-                .then(response => response.json())
-                .then(data => {
-                    if (data && data[0].profile.PhotoData){
-                        const imageUrl = 'https://wikitree.com' + data[0].profile.PhotoData.url + '';
-                        //console.log("image : "+imageUrl);
-                        processNode.nodeImages[item_id] = [0, [{
-                            'url': imageUrl,
-                            'source': "Wikitree",
-                        }]];
-                        //add image on top of innerHTML
-                        rows[objIndex].innerHTML = '<img class="node_image" id="image_' + item_id + '" data-item="' + item_id + '" alt="" src="' + imageUrl + '">' + rows[objIndex].innerHTML;
-                    }
-                })
-                .catch(err => {
-                    console.log("Error Get wikitree image : "+err);
-                });
+            var wikitreeId = claims['P2949'][0].value;
+            wikitree.getProfilePic(wikitreeId, function(data){
+                if (data && data[0].profile.PhotoData){
+                    const imageUrl = 'https://wikitree.com' + data[0].profile.PhotoData.url + '';
+                    //console.log("image : "+imageUrl);
+                    processNode.nodeImages[item_id] = [0, [{
+                        'url': imageUrl,
+                        'source': "Wikitree",
+                    }]];
+                    //add image on top of innerHTML
+                    rows[objIndex].innerHTML = '<img class="node_image" id="image_' + item_id + '" data-item="' + item_id + '" alt="" src="' + imageUrl + '">' + rows[objIndex].innerHTML;
+                }
+            });
         }
     }
     // console.log(duplicates);
@@ -969,7 +976,7 @@ function processLevel(data, item_id, child_id, lang, secondLang, level) {
 
 }
 }).call(this,"/controllers")
-},{"../controllers/processNode":1,"../controllers/wikidata":2,"../public/js/wikidataLang":40,"async":5,"fs":42,"moment":7,"node-cache":8,"node-fetch":10,"wikidata-sdk":39}],4:[function(require,module,exports){
+},{"../controllers/processNode":1,"../controllers/thirdsources/wikitree":2,"../controllers/wikidata":3,"../public/js/wikidataLang":41,"async":6,"fs":43,"moment":8,"node-cache":9,"node-fetch":11,"wikidata-sdk":40}],5:[function(require,module,exports){
 // var wbk = require('wikidata-sdk/types');
 var wikitree = require('./controllers/wikitree');
 
@@ -998,7 +1005,7 @@ var supportedTypes = {
         { prop: 'P279', name: 'subclass', to_q: false, edge_color: '#FF4848' },
     ]
 };
-var treeType, maxLevel, secondLang, chartOptions = [];
+var treeType, maxLevel, secondLang, orientation, chartOptions = [];
 var labelIds = [];
 
 
@@ -1088,9 +1095,10 @@ function renderData(data) {
     }
     var treeStructure = unflatten(rows);
     treeStructure = treeStructure[0];
-    console.log(treeStructure);
-    console.log(JSON.stringify(treeStructure));
-
+    if(chartOptions.log) {
+        console.log(treeStructure);
+        console.log(JSON.stringify(treeStructure));
+    }
     var chart_config = {
         chart: {
             container: "#collapsable-example",
@@ -1100,7 +1108,7 @@ function renderData(data) {
                 type: 'step' //curve bCurve step straight
             },
             animateOnInit: true,
-            // rootOrientation: orientation.toUpperCase(),
+            rootOrientation: orientation.toUpperCase(),
             node: {
                 collapsable: true
             },
@@ -1185,7 +1193,7 @@ function drawChart() {
 
     console.log(chartOptions);//c
 
-    var orientation = getParameterByName('orientation') || 'NORTH';
+    orientation = getParameterByName('orientation') || 'NORTH';
     selectFormField('orientation', orientation);
     //set the animation progressbar
     var progressBar = $("#progressbar");
@@ -1259,7 +1267,7 @@ function getParameterByName(name) {
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 drawChart();
-},{"./controllers/wikitree":3}],5:[function(require,module,exports){
+},{"./controllers/wikitree":4}],6:[function(require,module,exports){
 (function (process,setImmediate){
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
@@ -6109,7 +6117,7 @@ drawChart();
 })));
 
 }).call(this,require('_process'),require("timers").setImmediate)
-},{"_process":47,"timers":51}],6:[function(require,module,exports){
+},{"_process":48,"timers":52}],7:[function(require,module,exports){
 (function (Buffer){
 var clone = (function() {
 'use strict';
@@ -6370,7 +6378,7 @@ if (typeof module === 'object' && module.exports) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":44}],7:[function(require,module,exports){
+},{"buffer":45}],8:[function(require,module,exports){
 //! moment.js
 //! version : 2.25.3
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
@@ -12042,7 +12050,7 @@ if (typeof module === 'object' && module.exports) {
 
 })));
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 /*
  * node-cache 5.1.0 ( 2019-12-08 )
  * https://github.com/mpneuried/nodecache
@@ -12061,7 +12069,7 @@ if (typeof module === 'object' && module.exports) {
 
 }).call(this);
 
-},{"./lib/node_cache":9}],9:[function(require,module,exports){
+},{"./lib/node_cache":10}],10:[function(require,module,exports){
 /*
  * node-cache 5.1.0 ( 2019-12-08 )
  * https://github.com/mpneuried/nodecache
@@ -12863,7 +12871,7 @@ if (typeof module === 'object' && module.exports) {
 
 }).call(this);
 
-},{"clone":6,"events":45}],10:[function(require,module,exports){
+},{"clone":7,"events":46}],11:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -12889,7 +12897,7 @@ exports.Headers = global.Headers;
 exports.Request = global.Request;
 exports.Response = global.Response;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 const toDateObject = require('./wikibase_time_to_date_object')
 
 const helpers = {}
@@ -12987,7 +12995,7 @@ helpers.getImageUrl = (filename, width) => {
 
 module.exports = helpers
 
-},{"./wikibase_time_to_date_object":26}],12:[function(require,module,exports){
+},{"./wikibase_time_to_date_object":27}],13:[function(require,module,exports){
 const { wikibaseTimeToISOString, wikibaseTimeToEpochTime, wikibaseTimeToSimpleDay } = require('./helpers')
 
 const simple = datavalue => datavalue.value
@@ -13106,7 +13114,7 @@ module.exports = {
   }
 }
 
-},{"./helpers":11}],13:[function(require,module,exports){
+},{"./helpers":12}],14:[function(require,module,exports){
 const { simplifyEntity } = require('./simplify_entity')
 
 module.exports = {
@@ -13122,7 +13130,7 @@ module.exports = {
   }
 }
 
-},{"./simplify_entity":17}],14:[function(require,module,exports){
+},{"./simplify_entity":18}],15:[function(require,module,exports){
 const truthyPropertyClaims = propClaims => {
   const aggregate = propClaims.reduce(aggregatePerRank, {})
   // on truthyness: https://www.mediawiki.org/wiki/Wikibase/Indexing/RDF_Dump_Format#Truthy_statements
@@ -13146,7 +13154,7 @@ const truthyClaims = claims => {
 
 module.exports = { truthyClaims, truthyPropertyClaims }
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 const { labels, descriptions, aliases, lemmas, glosses } = require('./simplify_text_attributes')
 
 const {
@@ -13191,7 +13199,7 @@ module.exports = {
   // entities,
 }
 
-},{"./simplify_claims":16,"./simplify_forms":18,"./simplify_senses":19,"./simplify_sitelinks":20,"./simplify_sparql_results":21,"./simplify_text_attributes":22}],16:[function(require,module,exports){
+},{"./simplify_claims":17,"./simplify_forms":19,"./simplify_senses":20,"./simplify_sitelinks":21,"./simplify_sparql_results":22,"./simplify_text_attributes":23}],17:[function(require,module,exports){
 const { parse: parseClaim } = require('./parse_claim')
 const { uniq } = require('../utils/utils')
 const { truthyPropertyClaims } = require('./rank')
@@ -13371,7 +13379,7 @@ module.exports = {
   simplifyQualifier: simplifyClaim
 }
 
-},{"../utils/utils":37,"./parse_claim":12,"./rank":14}],17:[function(require,module,exports){
+},{"../utils/utils":38,"./parse_claim":13,"./rank":15}],18:[function(require,module,exports){
 const simplify = require('./simplify')
 
 const simplifyEntity = (entity, options) => {
@@ -13431,7 +13439,7 @@ simplify.entities = simplifyEntities
 
 module.exports = { simplifyEntity, simplifyEntities }
 
-},{"./simplify":15}],18:[function(require,module,exports){
+},{"./simplify":16}],19:[function(require,module,exports){
 const { isFormId } = require('./helpers')
 const { representations: simplifyRepresentations } = require('./simplify_text_attributes')
 const { simplifyClaims } = require('./simplify_claims')
@@ -13451,7 +13459,7 @@ const simplifyForms = (forms, options) => forms.map(form => simplifyForm(form, o
 
 module.exports = { simplifyForm, simplifyForms }
 
-},{"./helpers":11,"./simplify_claims":16,"./simplify_text_attributes":22}],19:[function(require,module,exports){
+},{"./helpers":12,"./simplify_claims":17,"./simplify_text_attributes":23}],20:[function(require,module,exports){
 const { isSenseId } = require('./helpers')
 const { glosses: simplifyGlosses } = require('./simplify_text_attributes')
 const { simplifyClaims } = require('./simplify_claims')
@@ -13470,7 +13478,7 @@ const simplifySenses = (senses, options) => senses.map(sense => simplifySense(se
 
 module.exports = { simplifySense, simplifySenses }
 
-},{"./helpers":11,"./simplify_claims":16,"./simplify_text_attributes":22}],20:[function(require,module,exports){
+},{"./helpers":12,"./simplify_claims":17,"./simplify_text_attributes":23}],21:[function(require,module,exports){
 const { getSitelinkUrl } = require('./sitelinks')
 
 module.exports = (sitelinks, options = {}) => {
@@ -13488,7 +13496,7 @@ const aggregateValues = (sitelinks, addUrl) => (index, key) => {
   return index
 }
 
-},{"./sitelinks":23}],21:[function(require,module,exports){
+},{"./sitelinks":24}],22:[function(require,module,exports){
 module.exports = (input, options = {}) => {
   if (typeof input === 'string') input = JSON.parse(input)
 
@@ -13606,7 +13614,7 @@ const specialNames = {
   altLabel: 'aliases'
 }
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 const simplifyTextAttributes = multivalue => data => {
   return Object.keys(data).reduce(aggregateValues(data, multivalue), {})
 }
@@ -13630,7 +13638,7 @@ module.exports = {
   glosses: singleValue
 }
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 const { fixedEncodeURIComponent, replaceSpaceByUnderscores, isPlainObject } = require('../utils/utils')
 const { isPropertyId } = require('./helpers')
 const wikidataBase = 'https://www.wikidata.org/wiki/'
@@ -13741,11 +13749,11 @@ const projectsBySuffix = {
 
 module.exports = { getSitelinkUrl, getSitelinkData, isSitelinkKey }
 
-},{"../utils/utils":37,"./helpers":11,"./sitelinks_languages":24}],24:[function(require,module,exports){
+},{"../utils/utils":38,"./helpers":12,"./sitelinks_languages":25}],25:[function(require,module,exports){
 // Generated by 'npm run update-sitelinks-languages'
 module.exports = [ 'aa', 'ab', 'af', 'ak', 'als', 'am', 'ang', 'an', 'ar', 'ast', 'as', 'av', 'ay', 'az', 'ba', 'be', 'bg', 'bh', 'bi', 'bm', 'bn', 'bo', 'br', 'bs', 'ca', 'chr', 'ch', 'co', 'cr', 'csb', 'cs', 'cv', 'cy', 'da', 'de', 'dv', 'dz', 'el', 'en', 'eo', 'es', 'et', 'eu', 'fa', 'fi', 'fj', 'fo', 'fr', 'fy', 'ga', 'gd', 'gl', 'gn', 'got', 'gu', 'gv', 'ha', 'he', 'hif', 'hi', 'hr', 'hsb', 'ht', 'hu', 'hy', 'ia', 'id', 'ie', 'ik', 'io', 'is', 'it', 'iu', 'ja', 'jbo', 'jv', 'ka', 'kk', 'kl', 'km', 'kn', 'ko', 'kr', 'ks', 'ku', 'kw', 'ky', 'la', 'lb', 'li', 'ln', 'lo', 'lt', 'lv', 'mg', 'mh', 'mi', 'mk', 'ml', 'mn', 'mo', 'mr', 'ms', 'mt', 'my', 'nah', 'nap', 'na', 'nds', 'ne', 'nl', 'nn', 'no', 'oc', 'om', 'or', 'pa', 'pi', 'pl', 'pms', 'pnb', 'ps', 'pt', 'qu', 'rm', 'rn', 'roa_rup', 'ro', 'ru', 'rw', 'sah', 'sa', 'scn', 'sc', 'sd', 'se', 'sg', 'sh', 'simple', 'si', 'sk', 'sl', 'sm', 'sn', 'so', 'sq', 'sr', 'ss', 'st', 'su', 'sv', 'sw', 'ta', 'te', 'tg', 'th', 'ti', 'tk', 'tl', 'tn', 'to', 'tpi', 'tr', 'ts', 'tt', 'tw', 'ug', 'uk', 'ur', 'uz', 'vec', 'vi', 'vo', 'wa', 'wo', 'xh', 'yi', 'yo', 'yue', 'za', 'zh_min_nan', 'zh', 'zu', 'ace', 'arc', 'arz', 'bar', 'bat_smg', 'bcl', 'be_x_old', 'bjn', 'bpy', 'bug', 'bxr', 'cbk_zam', 'cdo', 'ce', 'ceb', 'cho', 'chy', 'ckb', 'crh', 'cu', 'diq', 'dsb', 'ee', 'eml', 'ext', 'ff', 'fiu_vro', 'frp', 'frr', 'fur', 'gag', 'gan', 'glk', 'hak', 'haw', 'ho', 'hz', 'ig', 'ii', 'ilo', 'kaa', 'kab', 'kbd', 'kg', 'ki', 'kj', 'koi', 'krc', 'ksh', 'kv', 'lad', 'lbe', 'lez', 'lg', 'lij', 'lmo', 'ltg', 'mai', 'map_bms', 'mdf', 'mhr', 'min', 'mrj', 'mus', 'mwl', 'myv', 'mzn', 'nds_nl', 'new', 'ng', 'nov', 'nrm', 'nso', 'nv', 'ny', 'os', 'pag', 'pam', 'pap', 'pcd', 'pdc', 'pfl', 'pih', 'pnt', 'rmy', 'roa_tara', 'rue', 'sco', 'srn', 'stq', 'szl', 'tet', 'tum', 'ty', 'tyv', 'udm', 've', 'vep', 'vls', 'war', 'wuu', 'xal', 'xmf', 'zea', 'zh_classical', 'zh_yue', 'lrc', 'gom', 'azb', 'ady', 'jam', 'tcy', 'olo', 'dty', 'atj', 'kbp', 'din', 'gor', 'inh', 'lfn', 'sat', 'shn', 'hyw', 'nqo', 'ban' ]
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 const helpers = require('./helpers')
 
 const validate = (name, testName) => value => {
@@ -13759,7 +13767,7 @@ module.exports = {
   revisionId: validate('revision id', 'isRevisionId')
 }
 
-},{"./helpers":11}],26:[function(require,module,exports){
+},{"./helpers":12}],27:[function(require,module,exports){
 module.exports = wikibaseTime => {
   // Also accept claim datavalue.value objects
   if (typeof wikibaseTime === 'object') {
@@ -13800,7 +13808,7 @@ const expandedYearDate = (sign, rest, year) => {
   return new Date(date)
 }
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 const { isPlainObject, forceArray, shortLang } = require('../utils/utils')
 const validate = require('../helpers/validate')
 
@@ -13849,7 +13857,7 @@ module.exports = buildUrl => (ids, languages, props, format, redirects) => {
   return buildUrl(query)
 }
 
-},{"../helpers/validate":25,"../utils/utils":37}],28:[function(require,module,exports){
+},{"../helpers/validate":26,"../utils/utils":38}],29:[function(require,module,exports){
 const { isPlainObject, forceArray, shortLang } = require('../utils/utils')
 
 module.exports = buildUrl => (titles, sites, languages, props, format, redirects) => {
@@ -13906,7 +13914,7 @@ module.exports = buildUrl => (titles, sites, languages, props, format, redirects
 // convert 2 letters language code to Wikipedia sitelinks code
 const parseSite = site => site.length === 2 ? `${site}wiki` : site
 
-},{"../utils/utils":37}],29:[function(require,module,exports){
+},{"../utils/utils":38}],30:[function(require,module,exports){
 const validate = require('../helpers/validate')
 const { isPlainObject } = require('../utils/utils')
 
@@ -13920,7 +13928,7 @@ module.exports = instance => (id, revision) => {
   return `${instance}/w/index.php?title=Special:EntityData/${id}.json&oldid=${revision}`
 }
 
-},{"../helpers/validate":25,"../utils/utils":37}],30:[function(require,module,exports){
+},{"../helpers/validate":26,"../utils/utils":38}],31:[function(require,module,exports){
 const { isPlainObject } = require('../utils/utils')
 
 module.exports = buildUrl => {
@@ -13948,7 +13956,7 @@ const getIdsGroups = ids => {
   return groups
 }
 
-},{"../utils/utils":37,"./get_entities":27}],31:[function(require,module,exports){
+},{"../utils/utils":38,"./get_entities":28}],32:[function(require,module,exports){
 const { forceArray } = require('../utils/utils')
 const { isItemId } = require('../helpers/helpers')
 const validate = require('../helpers/validate')
@@ -14013,7 +14021,7 @@ const caseInsensitiveValueQuery = (properties, value, filter, limit) => {
 
 const prefixifyProperty = property => 'wdt:' + property
 
-},{"../helpers/helpers":11,"../helpers/validate":25,"../utils/utils":37,"./sparql_query":34}],32:[function(require,module,exports){
+},{"../helpers/helpers":12,"../helpers/validate":26,"../utils/utils":38,"./sparql_query":35}],33:[function(require,module,exports){
 const { forceArray } = require('../utils/utils')
 const validate = require('../helpers/validate')
 
@@ -14052,7 +14060,7 @@ const getEpochSeconds = date => {
 
 const earliestPointInMs = new Date('2000-01-01').getTime()
 
-},{"../helpers/validate":25,"../utils/utils":37}],33:[function(require,module,exports){
+},{"../helpers/validate":26,"../utils/utils":38}],34:[function(require,module,exports){
 const { isPlainObject } = require('../utils/utils')
 const types = [ 'item', 'property', 'lexeme', 'form', 'sense' ]
 
@@ -14096,7 +14104,7 @@ module.exports = buildUrl => (search, language, limit, format, uselang) => {
   })
 }
 
-},{"../utils/utils":37}],34:[function(require,module,exports){
+},{"../utils/utils":38}],35:[function(require,module,exports){
 const { fixedEncodeURIComponent } = require('../utils/utils')
 
 module.exports = sparqlEndpoint => sparql => {
@@ -14104,7 +14112,7 @@ module.exports = sparqlEndpoint => sparql => {
   return `${sparqlEndpoint}?format=json&query=${query}`
 }
 
-},{"../utils/utils":37}],35:[function(require,module,exports){
+},{"../utils/utils":38}],36:[function(require,module,exports){
 const isBrowser = typeof location !== 'undefined' && typeof document !== 'undefined'
 const qs = isBrowser ? require('./querystring_lite') : require('querystring')
 
@@ -14115,7 +14123,7 @@ module.exports = instanceApiEndpoint => queryObj => {
   return instanceApiEndpoint + '?' + qs.stringify(queryObj)
 }
 
-},{"./querystring_lite":36,"querystring":50}],36:[function(require,module,exports){
+},{"./querystring_lite":37,"querystring":51}],37:[function(require,module,exports){
 module.exports = {
   stringify: queryObj => {
     var qstring = ''
@@ -14134,7 +14142,7 @@ module.exports = {
   }
 }
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 module.exports = {
   // Ex: keep only 'fr' in 'fr_FR'
   shortLang: language => language.toLowerCase().split('_')[0],
@@ -14165,7 +14173,7 @@ module.exports = {
 
 const encodeCharacter = char => '%' + char.charCodeAt(0).toString(16)
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 const { isPlainObject } = require('./utils/utils')
 
 const simplify = require('./helpers/simplify')
@@ -14261,13 +14269,13 @@ const missingInstance = missingConfig('an instance')
 
 module.exports = WBK
 
-},{"../lib/helpers/rank":14,"../lib/helpers/sitelinks":23,"./helpers/helpers":11,"./helpers/parse_responses":13,"./helpers/simplify":15,"./queries/get_entities":27,"./queries/get_entities_from_sitelinks":28,"./queries/get_entity_revision":29,"./queries/get_many_entities":30,"./queries/get_reverse_claims":31,"./queries/get_revisions":32,"./queries/search_entities":33,"./queries/sparql_query":34,"./utils/build_url":35,"./utils/utils":37}],39:[function(require,module,exports){
+},{"../lib/helpers/rank":15,"../lib/helpers/sitelinks":24,"./helpers/helpers":12,"./helpers/parse_responses":14,"./helpers/simplify":16,"./queries/get_entities":28,"./queries/get_entities_from_sitelinks":29,"./queries/get_entity_revision":30,"./queries/get_many_entities":31,"./queries/get_reverse_claims":32,"./queries/get_revisions":33,"./queries/search_entities":34,"./queries/sparql_query":35,"./utils/build_url":36,"./utils/utils":38}],40:[function(require,module,exports){
 module.exports = require('wikibase-sdk')({
   instance: 'https://www.wikidata.org',
   sparqlEndpoint: 'https://query.wikidata.org/sparql'
 })
 
-},{"wikibase-sdk":38}],40:[function(require,module,exports){
+},{"wikibase-sdk":39}],41:[function(require,module,exports){
 function getWikidataLanguages() {
     return {"ab":"Abkhazian","abs":"Ambonese Malay","ace":"Achinese","ady":"Adyghe","ady-cyrl":"Adyghe (Cyrillic script)","aeb":"Tunisian Arabic","aeb-arab":"Tunisian Arabic (Arabic script)","aeb-latn":"Tunisian Arabic (Latin script)","af":"Afrikaans","ak":"Akan","aln":"Gheg Albanian","am":"Amharic","an":"Aragonese","ang":"Old English","anp":"Angika","ar":"Arabic","arc":"Aramaic","arn":"Mapuche","arq":"Algerian Arabic","ary":"Moroccan Arabic","arz":"Egyptian Arabic","as":"Assamese","ase":"American Sign Language","ast":"Asturian","atj":"Atikamekw","av":"Avaric","avk":"Kotava","awa":"Awadhi","ay":"Aymara","az":"Azerbaijani","azb":"South Azerbaijani","ba":"Bashkir","ban":"Balinese","bar":"Bavarian","bbc":"Batak Toba","bbc-latn":"Batak Toba (Latin script)","bcc":"Southern Balochi","bcl":"Central Bikol","be":"Belarusian","be-tarask":"Belarusian (Taraškievica orthography)","bg":
             "Bulgarian","bgn":"Western Balochi","bh":"Bhojpuri","bho":"Bhojpuri","bi":"Bislama","bjn":"Banjar","bm":"Bambara","bn":"Bangla","bo":"Tibetan","bpy":"Bishnupriya","bqi":"Bakhtiari","br":"Breton","brh":"Brahui","bs":"Bosnian","btm":"Batak Mandailing","bto":"Iriga Bicolano","bug":"Buginese","bxr":"Russia Buriat","ca":"Catalan","cbk-zam":"Chavacano","cdo":"Min Dong Chinese","ce":"Chechen","ceb":"Cebuano","ch":"Chamorro","chr":"Cherokee","chy":"Cheyenne","ckb":"Central Kurdish","co":"Corsican","cps":"Capiznon","cr":"Cree","crh":"Crimean Turkish","crh-cyrl":"Crimean Tatar (Cyrillic script)","crh-latn":"Crimean Tatar (Latin script)","cs":"Czech","csb":"Kashubian","cu":"Church Slavic","cv":"Chuvash","cy":"Welsh","da":"Danish","de":"German","de-at":"Austrian German","de-ch":"Swiss High German","de-formal":"German (formal address)","din":"Dinka","diq":"Zazaki","dsb":"Lower Sorbian","dtp":"Central Dusun","dty":"Doteli","dv":"Divehi","dz":"Dzongkha","ee":"Ewe","egl":"Emilian","el":"Greek","eml":
@@ -14291,7 +14299,7 @@ function getWikidataLanguagesSource() {
     return r;
 }
 getWDLanguages = getWikidataLanguages(); //set variable to be accessed 
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 exports.imageURLS = {
 
     92469811 : "https://www.strategybg.com/wp-content/uploads/2013/08/Page30.jpg",
@@ -14314,9 +14322,9 @@ exports.imageURLS = {
     6828395 : "https://tokoh.id/wp-content/uploads/2017/07/michael-bambang-hartono-bio-235x300.jpg",
     93085730 : "https://1.bp.blogspot.com/-1CABz0ySWgw/XHYNEBwq9HI/AAAAAAAABjg/aBDmoAAXoRg7vin7vBWRtNJumeHQv9ZfgCLcBGAs/s1600/Victor%2Bhartono.jpg",
 };
-},{}],42:[function(require,module,exports){
-
 },{}],43:[function(require,module,exports){
+
+},{}],44:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -14470,7 +14478,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],44:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 (function (Buffer){
 /*!
  * The buffer module from node.js, for the browser.
@@ -16251,7 +16259,7 @@ function numberIsNaN (obj) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"base64-js":43,"buffer":44,"ieee754":46}],45:[function(require,module,exports){
+},{"base64-js":44,"buffer":45,"ieee754":47}],46:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -16776,7 +16784,7 @@ function functionBindPolyfill(context) {
   };
 }
 
-},{}],46:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = (nBytes * 8) - mLen - 1
@@ -16862,7 +16870,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],47:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -17048,7 +17056,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -17134,7 +17142,7 @@ var isArray = Array.isArray || function (xs) {
   return Object.prototype.toString.call(xs) === '[object Array]';
 };
 
-},{}],49:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -17221,13 +17229,13 @@ var objectKeys = Object.keys || function (obj) {
   return res;
 };
 
-},{}],50:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 'use strict';
 
 exports.decode = exports.parse = require('./decode');
 exports.encode = exports.stringify = require('./encode');
 
-},{"./decode":48,"./encode":49}],51:[function(require,module,exports){
+},{"./decode":49,"./encode":50}],52:[function(require,module,exports){
 (function (setImmediate,clearImmediate){
 var nextTick = require('process/browser.js').nextTick;
 var apply = Function.prototype.apply;
@@ -17306,4 +17314,4 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
   delete immediateIds[id];
 };
 }).call(this,require("timers").setImmediate,require("timers").clearImmediate)
-},{"process/browser.js":47,"timers":51}]},{},[4]);
+},{"process/browser.js":48,"timers":52}]},{},[5]);
