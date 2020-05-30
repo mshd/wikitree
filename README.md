@@ -18,6 +18,13 @@ npm run dev
 
 Open [localhost:3000](http://localhost:3000/)
 
+## Browserify
+
+Please use 
+```browserify main.js > public/js/bundle.js 
+```
+to build the javascript file
+
 ## Built With
 
 * TreantJS
