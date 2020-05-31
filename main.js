@@ -259,7 +259,14 @@ function drawChart() {
         // var wikitree = require('./controllers/wikitree');
         // console.log(wikitree.)
         wikitree.init(settings,function (err,data) {
-            console.log("entered fu");
+
+            if(err){
+                $("#progressbar").progressbar({ value: 100 });
+                alert("Error processing data, please try again");
+                console.log(err);
+                return;
+            }
+            // console.log("entered fu");
             console.log(data);
             renderData(data)
 
