@@ -95,7 +95,7 @@ exports.createNode = function (data, item_id, child_id, lang, secondLang, treeTy
 
     if (claims['P21']) {
         var gender_id = parseInt((claims['P21'][0].value).substr(1));
-        var gender_html = gender_id+ ' ';
+        var gender_html = '';
         if (gender_id === 6581097 || gender_id === 44148) {
             sortValue=0;
             gender_html = '<i class="fa fa-mars"></i>';
@@ -521,8 +521,8 @@ exports.wikidataApi = function(para, callback, wait) {
             .then(entities => {
                 callback(null,entities);
                 // return entities;
-            })
-            .catch(error =>{ console.log("ERROR fetch in Wikidata.js :"+error.message); callback(new Error("ERROR fetch in Wikidata.js :"+error.message),null); }); //add Error catch
+            });
+            // .catch(error =>{ console.log("ERROR fetch in Wikidata.js :"+error.message); callback(new Error("ERROR fetch in Wikidata.js :"+error.message),null); }); //add Error catch
             //https://nodejs.org/api/errors.html#errors_error_first_callbacks
     }else{
         //https://stackoverflow.com/questions/31710768/how-can-i-fetch-an-array-of-urls-with-promise-all
@@ -538,8 +538,8 @@ exports.wikidataApi = function(para, callback, wait) {
             }
             callback(null,{entities: entities});
 
-        })
-            .catch(error => {console.log("Error Promise in wikidata.js : "+error.message); callback(new Error("Error Promise in wikidata.js : "+error.message),null);}); //add Error catch
+        });
+            // .catch(error => {console.log("Error Promise in wikidata.js : "+error.message); callback(new Error("Error Promise in wikidata.js : "+error.message),null);}); //add Error catch
     }
 
 };
@@ -587,6 +587,10 @@ var supportedTypes = {
     'subclasses': [
         // { prop : 'P1830' , name : 'owns' ,      to_q : false , edge_color : '#3923D6' } ,
         { prop: 'P279', name: 'subclass', to_q: false, edge_color: '#FF4848' },
+    ],
+    'taxon': [
+        // { prop : 'P1830' , name : 'owns' ,      to_q : false , edge_color : '#3923D6' } ,
+        { prop: 'P171', name: 'parent_taxon', to_q: false, edge_color: '#FF4848' },
     ]
 };
 exports.init = function (request, callback) {
@@ -599,14 +603,15 @@ exports.init = function (request, callback) {
     processNode.birthAndDeathPlace = [];
     processNode.result.root = null;
 
-    //set MaxLevel to Global so it can be accessed 
+    //set MaxLevel to Global so it can be accessed
     maxLevel = request.maxLevel || 3;
     stackChildren = true;//request.chartOptions.stackChildren ||
     //check primary selected language, change to english if not exist in default language
     lang = (request.lang in defLanguage)? request.lang : "en";
     treeType = request.property;
     // chartOptions = request.options;
-    chartOptions.spouses = (request.spouses === "1" ? true: false);
+    chartOptions.spouses = (request.spouses === "1" || request.spouses === 1 || request.spouses === "on");
+    chartOptions.placeInsteadOfHopsital = (request.placeInsteadOfHopsital === "1" || request.placeInsteadOfHopsital === 1 || request.placeInsteadOfHopsital === "on");
     // console.log("fetch spouses: "+(chartOptions.spouses?"yes":"no"));
     //Second language must in default language and not equal primary language
     secondLang = (request.secondLang in defLanguage && request.secondLang !== request.lang )? request.secondLang : null;
@@ -675,7 +680,7 @@ exports.init = function (request, callback) {
                 //TODO no labels
                 var data = wikidataController.wikidataApi({
                     ids: Array.from(new Set(processNode.labelIds)),//make labelIds unique https://futurestud.io/tutorials/node-js-get-an-array-with-unique-values-delete-duplicates
-                    props: 'labels|claims',
+                    props: 'labels' + (chartOptions.placeInsteadOfHopsital? '|claims':''),
                     lang: ((lang !== "en" || secondLang !== "en")? "en|" :"" ) + lang + (secondLang ? "|"+secondLang : ""), //add default english language if selected primary or second language not english
                 }, function (err,data) {
                     if (err){
@@ -719,17 +724,19 @@ exports.init = function (request, callback) {
                         const birthDeathPlace = Array.from(new Set(processNode.birthAndDeathPlace));
                         //iterate each of the place of birth and death label to see if it's instance of hospital
                         birthDeathPlace.forEach((key)=>{
-                            const claims = wbk.simplify.claims(labels[key].claims);
-                             //check if it's instance of Hospital
-                             if (claims.P31 && claims.P31 == 'Q16917'){
-                                if (claims.P131){
-                                    //use administrative territorial entity P131 if exist
-                                    labelChange.push(claims.P131[0]);
-                                    keyChange[claims.P131[0]] = key;
-                                }else if (claims.P276){
-                                    //or use location P276 if entity P131 not exist
-                                    labelChange.push(claims.P276[0]);
-                                    keyChange[claims.P276[0]] = key;
+                            if(labels[key]) {
+                                const claims = wbk.simplify.claims(labels[key].claims);
+                                //check if it's instance of Hospital
+                                if (claims.P31 && claims.P31 == 'Q16917') {
+                                    if (claims.P131) {
+                                        //use administrative territorial entity P131 if exist
+                                        labelChange.push(claims.P131[0]);
+                                        keyChange[claims.P131[0]] = key;
+                                    } else if (claims.P276) {
+                                        //or use location P276 if entity P131 not exist
+                                        labelChange.push(claims.P276[0]);
+                                        keyChange[claims.P276[0]] = key;
+                                    }
                                 }
                             }
                         });
@@ -888,7 +895,7 @@ function processLevel(data, item_id, child_id, lang, secondLang, level) {
     //     }
     // ];
     var duplicates = rows.some(o => o.id === item_id);
-    // console.log("Push new row : "+ item_id);
+    console.log("Push new row : "+ item_id);
     rows.push(newRow);
     //check if there is not image exist, call wikitree image;
     if (false && !newRow.innerHTML.includes('node_image')){//TODO fix https://github.com/dataprick/wikitree/issues/9
@@ -1162,6 +1169,7 @@ function drawChart() {
     chartOptions.occupations = urlVars['options[occupations]'] || false;
     chartOptions.siblings = urlVars['options[siblings]'] || false;
     chartOptions.stackChildren = getParameterByName('stack') || true;
+    chartOptions.placeInsteadOfHopsital = urlVars['options[placeInsteadOfHopsital]'] || false;
 
 
 
@@ -1223,8 +1231,11 @@ function drawChart() {
         nocache: nocache,
         options: chartOptions,
         spouses: (chartOptions.spouses ? 1 : 0),
+        placeInsteadOfHopsital: (chartOptions.placeInsteadOfHopsital ? 1 : 0),
 
     };
+    console.log("Requested settings");
+    console.log(settings);
     if(false) {// previous
         $.getJSON(createtreeUrl,
             settings, function (data) {
@@ -1234,7 +1245,14 @@ function drawChart() {
         // var wikitree = require('./controllers/wikitree');
         // console.log(wikitree.)
         wikitree.init(settings,function (err,data) {
-            console.log("entered fu");
+
+            if(err){
+                $("#progressbar").progressbar({ value: 100 });
+                alert("Error processing data, please try again");
+                console.log(err);
+                return;
+            }
+            // console.log("entered fu");
             console.log(data);
             renderData(data)
 
