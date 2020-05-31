@@ -26,7 +26,7 @@ var supportedTypes = {
         { prop: 'P279', name: 'subclass', to_q: false, edge_color: '#FF4848' },
     ]
 };
-var treeType, maxLevel, secondLang, chartOptions = [];
+var treeType, maxLevel, secondLang, orientation, chartOptions = [];
 var labelIds = [];
 
 
@@ -128,7 +128,7 @@ function renderData(data) {
                 type: 'step' //curve bCurve step straight
             },
             animateOnInit: true,
-            // rootOrientation: orientation.toUpperCase(),
+            rootOrientation: orientation.toUpperCase(),
             node: {
                 collapsable: true
             },
@@ -213,7 +213,7 @@ function drawChart() {
 
     console.log(chartOptions);//c
 
-    var orientation = getParameterByName('orientation') || 'NORTH';
+    orientation = getParameterByName('orientation') || 'NORTH';
     selectFormField('orientation', orientation);
     //set the animation progressbar
     var progressBar = $("#progressbar");
