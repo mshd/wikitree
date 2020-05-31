@@ -116,9 +116,10 @@ function renderData(data) {
     }
     var treeStructure = unflatten(rows);
     treeStructure = treeStructure[0];
-    console.log(treeStructure);
-    console.log(JSON.stringify(treeStructure));
-
+    if(chartOptions.log) {
+        console.log(treeStructure);
+        console.log(JSON.stringify(treeStructure));
+    }
     var chart_config = {
         chart: {
             container: "#collapsable-example",
@@ -247,6 +248,8 @@ function drawChart() {
         placeInsteadOfHopsital: (chartOptions.placeInsteadOfHopsital ? 1 : 0),
 
     };
+    console.log("Requested settings");
+    console.log(settings);
     if(false) {// previous
         $.getJSON(createtreeUrl,
             settings, function (data) {
