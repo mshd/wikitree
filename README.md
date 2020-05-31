@@ -27,6 +27,8 @@ browserify main.js > public/js/bundle.js
 ```
 to build the javascript file
 
+If you want to use the script server side, use parameter "&serverSide=1", this might make sense for debugging and testing
+
 ## Built With
 
 * TreantJS
