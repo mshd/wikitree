@@ -40,6 +40,10 @@ var supportedTypes = {
     'subclasses': [
         // { prop : 'P1830' , name : 'owns' ,      to_q : false , edge_color : '#3923D6' } ,
         { prop: 'P279', name: 'subclass', to_q: false, edge_color: '#FF4848' },
+    ],
+    'taxon': [
+        // { prop : 'P1830' , name : 'owns' ,      to_q : false , edge_color : '#3923D6' } ,
+        { prop: 'P171', name: 'parent_taxon', to_q: false, edge_color: '#FF4848' },
     ]
 };
 exports.init = function (request, callback) {
@@ -52,7 +56,7 @@ exports.init = function (request, callback) {
     processNode.birthAndDeathPlace = [];
     processNode.result.root = null;
 
-    //set MaxLevel to Global so it can be accessed 
+    //set MaxLevel to Global so it can be accessed
     maxLevel = request.maxLevel || 3;
     stackChildren = true;//request.chartOptions.stackChildren ||
     //check primary selected language, change to english if not exist in default language
