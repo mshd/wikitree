@@ -182,6 +182,7 @@ function drawChart() {
     chartOptions.occupations = urlVars['options[occupations]'] || false;
     chartOptions.siblings = urlVars['options[siblings]'] || false;
     chartOptions.stackChildren = getParameterByName('stack') || true;
+    chartOptions.placeInsteadOfHopsital = urlVars['options[placeInsteadOfHopsital]'] || false;
 
 
 
@@ -243,6 +244,7 @@ function drawChart() {
         nocache: nocache,
         options: chartOptions,
         spouses: (chartOptions.spouses ? 1 : 0),
+        placeInsteadOfHopsital: (chartOptions.placeInsteadOfHopsital ? 1 : 0),
 
     };
     if(false) {// previous
