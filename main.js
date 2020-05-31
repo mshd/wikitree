@@ -246,11 +246,11 @@ function drawChart() {
         options: chartOptions,
         spouses: (chartOptions.spouses ? 1 : 0),
         placeInsteadOfHopsital: (chartOptions.placeInsteadOfHopsital ? 1 : 0),
-
-    };
+        serverSide: getParameterByName('serverSide') || false
+};
     console.log("Requested settings");
     console.log(settings);
-    if(false) {// previous
+    if(settings.serverSide) {// previous
         $.getJSON(createtreeUrl,
             settings, function (data) {
                 renderData(data)
