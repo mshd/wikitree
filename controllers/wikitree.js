@@ -59,7 +59,8 @@ exports.init = function (request, callback) {
     lang = (request.lang in defLanguage)? request.lang : "en";
     treeType = request.property;
     // chartOptions = request.options;
-    chartOptions.spouses = (request.spouses === "1" ? true: false);
+    chartOptions.spouses = (request.spouses === "1" || request.spouses === 1 || request.spouses === "on");
+    chartOptions.placeInsteadOfHopsital = (request.placeInsteadOfHopsital === "1" || request.placeInsteadOfHopsital === 1 || request.placeInsteadOfHopsital === "on");
     // console.log("fetch spouses: "+(chartOptions.spouses?"yes":"no"));
     //Second language must in default language and not equal primary language
     secondLang = (request.secondLang in defLanguage && request.secondLang !== request.lang )? request.secondLang : null;
@@ -128,7 +129,7 @@ exports.init = function (request, callback) {
                 //TODO no labels
                 var data = wikidataController.wikidataApi({
                     ids: Array.from(new Set(processNode.labelIds)),//make labelIds unique https://futurestud.io/tutorials/node-js-get-an-array-with-unique-values-delete-duplicates
-                    props: 'labels|claims',
+                    props: 'labels' + (chartOptions.placeInsteadOfHopsital? '|claims':''),
                     lang: ((lang !== "en" || secondLang !== "en")? "en|" :"" ) + lang + (secondLang ? "|"+secondLang : ""), //add default english language if selected primary or second language not english
                 }, function (err,data) {
                     if (err){
@@ -172,17 +173,19 @@ exports.init = function (request, callback) {
                         const birthDeathPlace = Array.from(new Set(processNode.birthAndDeathPlace));
                         //iterate each of the place of birth and death label to see if it's instance of hospital
                         birthDeathPlace.forEach((key)=>{
-                            const claims = wbk.simplify.claims(labels[key].claims);
-                             //check if it's instance of Hospital
-                             if (claims.P31 && claims.P31 == 'Q16917'){
-                                if (claims.P131){
-                                    //use administrative territorial entity P131 if exist
-                                    labelChange.push(claims.P131[0]);
-                                    keyChange[claims.P131[0]] = key;
-                                }else if (claims.P276){
-                                    //or use location P276 if entity P131 not exist
-                                    labelChange.push(claims.P276[0]);
-                                    keyChange[claims.P276[0]] = key;
+                            if(labels[key]) {
+                                const claims = wbk.simplify.claims(labels[key].claims);
+                                //check if it's instance of Hospital
+                                if (claims.P31 && claims.P31 == 'Q16917') {
+                                    if (claims.P131) {
+                                        //use administrative territorial entity P131 if exist
+                                        labelChange.push(claims.P131[0]);
+                                        keyChange[claims.P131[0]] = key;
+                                    } else if (claims.P276) {
+                                        //or use location P276 if entity P131 not exist
+                                        labelChange.push(claims.P276[0]);
+                                        keyChange[claims.P276[0]] = key;
+                                    }
                                 }
                             }
                         });
@@ -341,7 +344,7 @@ function processLevel(data, item_id, child_id, lang, secondLang, level) {
     //     }
     // ];
     var duplicates = rows.some(o => o.id === item_id);
-    // console.log("Push new row : "+ item_id);
+    console.log("Push new row : "+ item_id);
     rows.push(newRow);
     //check if there is not image exist, call wikitree image;
     if (false && !newRow.innerHTML.includes('node_image')){//TODO fix https://github.com/dataprick/wikitree/issues/9
