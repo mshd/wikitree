@@ -22,6 +22,7 @@ Open [localhost:3000](http://localhost:3000/)
 
 Please use 
 ```console
+npm install -g browserify
 browserify main.js > public/js/bundle.js 
 ```
 to build the javascript file
