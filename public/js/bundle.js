@@ -841,7 +841,9 @@ function processLevel(data, item_id, child_id, lang, secondLang, level) {
         //populate all the spouses
         Object.keys(oldClaimSpouse).forEach((key)=>{
             var spouseId = wbk.simplify.claim(oldClaimSpouse[key]);
-            spouses.push(spouseId);
+            //check spouse value
+            if (spouseId && spouseId !== undefined)
+                spouses.push(spouseId);
         });
 
         //get spouses data
@@ -1081,7 +1083,16 @@ unflatten = function (array, parent, tree) {
         if (parent.id == 0) {
             tree = children;
         } else {
-            parent['children'] = children
+            //check if sibling option
+            if (chartOptions.siblings && !_.isEmpty(siblings)){
+                var pseudoNode = [{
+                    pseudo:true,
+                    children: children
+                }];
+                parent['children'] = pseudoNode;
+            }else{
+                parent['children'] = children
+            }
         }
         _.each(children, function (child) { unflatten(array, child) });
     }
@@ -1094,7 +1105,7 @@ function selectFormField(name, value) {
 
 
 function renderData(data) {
-    rows = data.rows;
+    rows = _.uniq(data.rows, 'id');
     if (!$("#searchbox").val()) {
         document.title = data.title;
         $("#searchbox").val(data.root.label);
