@@ -95,7 +95,16 @@ unflatten = function (array, parent, tree) {
         if (parent.id == 0) {
             tree = children;
         } else {
-            parent['children'] = children
+            //check if sibling option
+            if (chartOptions.siblings && !_.isEmpty(siblings)){
+                var pseudoNode = [{
+                    pseudo:true,
+                    children: children
+                }];
+                parent['children'] = pseudoNode;
+            }else{
+                parent['children'] = children
+            }
         }
         _.each(children, function (child) { unflatten(array, child) });
     }

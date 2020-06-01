@@ -1624,6 +1624,11 @@
 
             this.children = [];
 
+            //supress error for rendering multiple amount of siblings
+            //supress Error: <path> attribute d: Expected number, "M,0,0" (https://github.com/fperucic/treant-js/issues/73)
+            this.X = 0;
+            this.Y = 0;
+            //end of supress Error: <path> attribute d: Expected number, "M,0,0"
             return this;
         },
 
