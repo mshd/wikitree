@@ -108,7 +108,7 @@ function selectFormField(name, value) {
 
 
 function renderData(data) {
-    rows = data.rows;
+    rows = _.uniq(data.rows, 'id');
     if (!$("#searchbox").val()) {
         document.title = data.title;
         $("#searchbox").val(data.root.label);
