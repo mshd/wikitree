@@ -294,7 +294,9 @@ function processLevel(data, item_id, child_id, lang, secondLang, level) {
         //populate all the spouses
         Object.keys(oldClaimSpouse).forEach((key)=>{
             var spouseId = wbk.simplify.claim(oldClaimSpouse[key]);
-            spouses.push(spouseId);
+            //check spouse value
+            if (spouseId && spouseId !== undefined)
+                spouses.push(spouseId);
         });
 
         //get spouses data
