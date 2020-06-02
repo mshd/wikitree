@@ -318,15 +318,16 @@
   <div class="container-fluid">
     <div class="row no-print">
       <h1 class="app-title row">
-        <span class="col-sm-2">
+        <span class="col-md-2 d-none d-md-block">
           <a class="btn btn-sm bg-white float-left" target="_blank" href="https://github.com/dataprick/wikitree">
             <img class="img img-fluid" src="storage/icons/github.png" style="max-height: 20px" ; /> Wikitree
           </a>
         </span>
-        <span class="col-sm-8">
+        <span class="col-10 col-md-8">
           Wikidata Tree Builder
-          <div class="dropdown" style="margin-left:50px;display:inline;">
-            <a class="btn btn-sm btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+          <!-- Example Dropdown -->
+          <div class="dropdown d-none d-sm-block" style="margin-left:50px;display:inline;">
+            <a class="btn btn-sm btn-secondary dropdown-toggle text-center" href="#" role="button" id="dropdownMenuLink"
               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               examples
             </a>
@@ -365,8 +366,71 @@
                  href="?q=Q206018&level=5&type=ancestors&orientation=West&lang=en&options[occupations]=on">Arwen's ancestors</a>
             </div>
           </div>
+          <!-- Display example in modal in smaller device -->
+          <div class="search-modal d-block d-sm-none" style="margin-left:50px;display:inline;">
+            <!-- Example Modal Button-->
+            <button type="button" class="btn btn-sm btn-secondary" data-toggle="modal" data-target="#exampleModal">
+              examples <i class="fa fa-caret-down"></i>
+            </button>
+            <!-- Example Modal -->
+            <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <ul class="list-group text-sm">
+                      <a class="list-group-item p-1"
+                      href="?q=Q712401&level=4&type=descendants&orientation=West&lang=en&options[birthname]=on&options[socialmedia]=on">Sudono
+                      Salim descendants</a>
+                      <a class="list-group-item p-1"
+                        href="?q=Q92597022&level=4&type=descendants&orientation=North&lang=en&options[socialmedia]=on">Walton
+                        Family Tree</a>
+                      <a class="list-group-item p-1" href="?q=Q4604&level=20&type=descendants&orientation=North&lang=en">Confucius
+                        descendants </a>
+                      <a class="list-group-item p-1" href="?q=Q5269611&level=6&type=ancestors&orientation=South&lang=en&second_lang=ne">Dhirendra of
+                        Nepal ancestors</a>
+                      <a class="list-group-item p-1"
+                        href="?q=Q1516371&level=6&type=owns&orientation=North&lang=en&stack=false&options[socialmedia]=on">Sinar
+                        Mas subsidiaries</a>
+                      <a class="list-group-item p-1"
+                        href="?q=Q3752663&level=5&type=descendants&orientation=North&lang=en&options[socialmedia]=on">Trump
+                        family</a>
+                      <a class="list-group-item p-1"
+                        href="?q=Q2430565&level=9&type=descendants&orientation=North&lang=en">Hamengkubuwono, rulers of
+                        Yogyakarta</a>
+                      <a class="list-group-item p-1" href="?q=Q9682&level=5&type=descendants&orientation=North&lang=en">Elizabeth II
+                        descendants</a>
+                      <a class="list-group-item p-1"
+                        href="?q=Q7404563&level=4&type=descendants&orientation=North&lang=en&options[socialmedia]=on">Khan
+                        family</a>
+                      <a class="list-group-item p-1"
+                        href="?q=Q1065&level=3&type=owns&orientation=West&lang=en&options[socialmedia]=on">United
+                        Nations structure</a>
+                      <a class="list-group-item p-1"
+                        href="?q=Q15928745&level=3&type=descendants&orientation=North&lang=en">Panda family tree</a>
+                      <a class="list-group-item p-1"
+                        href="?q=Q206018&level=5&type=ancestors&orientation=West&lang=en&options[occupations]=on">Arwen's ancestors</a>
+                    </ul>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </span>
-        <span class="col-sm-2">
+        <span class="col-2 d-block d-sm-none p-2">
+          <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#form_div" aria-expanded="false" aria-controls="search">
+            <i class="fa fa-bars"></i>
+          </button>
+        </span>
+        <span class="col-md-2 d-none d-md-block">
           <img
             src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Wikidata_Stamp_Rec_Light.svg/200px-Wikidata_Stamp_Rec_Light.svg.png"
             style="background-color:white;height:25px;float: right;" />
@@ -374,7 +438,8 @@
       </h1>
 
     </div>
-    <div class="row no-print">
+  <div class="row no-print navbar-expand-sm">
+    <div class="collapse navbar-collapse" id="form_div">
       <form method="get" id="search" class="form-input col-md-12 pt-3">
         <input name="q" type="hidden" id="searchbox_id" />
 
@@ -443,6 +508,7 @@
 
       </form>
     </div>
+  </div>
 
     <div class="row render-content">
       <div id="progressbar"></div>
