@@ -28,25 +28,7 @@ $(".searchbox").autocomplete({
     minLength: 2,
     source: function (request, response) {
         console.log(request.term);
-        $.ajax({
-            // https://www.wikidata.org/w/api.php?action=wbsearchentities&search=W&format=json&errorformat=plaintext&language=en&uselang=en&type=item
-            url: "https://www.wikidata.org/w/api.php",
-            dataType: "jsonp",
-            data: {
-                'action': "wbsearchentities",
-                'format': "json",
-                'errorformat': "plaintext",
-                'language': "en",
-                'uselang': "en",
-                'type': "item",
-                'search': request.term
-            },
-            success: function (data) {
-                // console.log(data);
-                data = data.search;
-                response(data);
-            }
-        });
+        ajaxCall(request,"item",response)
     },
     change: function (event, ui) {
         //Detect changes and clear input search field when not select the autocomplete option
@@ -69,6 +51,62 @@ $(".searchbox").autocomplete({
         .appendTo(ul);
 };
 
+$(".type_select").autocomplete({
+    minLength: 2,
+    source: function (request, response) {
+        console.log(request.term);
+        ajaxCall(request,"property",response)
+    },
+    change: function (event, ui) {
+        //Detect changes and clear input search field when not select the autocomplete option
+        if (ui.item == null || ui.item == undefined) {
+            $("#type_select").val("");
+            $("#search-button").attr("disabled", true);
+        } else {
+            $("#search-button").attr("disabled", false);
+        }
+    },
+    select: function (event, ui) {
+        $("#type_select").val(ui.item.label);
+        $("#type_select_id").val(ui.item.id);
+        $("#search-button").attr("disabled", false);
+        return false;
+    }
+}).on('click', function() {
+    //display popover when input text is clicked
+    $(this).popover({
+        html: true,
+        trigger: 'focus',
+        content: (
+            `<div class="card>
+                <div class="card-body ">
+                    Most common :
+                    <ul class="list-group">
+                        <li class="list-group-item p-1"><a class="btn btn-sm common-property">ancestors</a></li>
+                        <li class="list-group-item p-1"><a class="btn btn-sm common-property">descendants</a></li>
+                        <li class="list-group-item p-1"><a class="btn btn-sm common-property">owner</a></li>
+                        <li class="list-group-item p-1"><a class="btn btn-sm common-property">owns</a></li>
+                    </ul>
+                </div>
+            </card>`
+        )
+
+      }).popover('show');
+      //set text if child item in popover clicked
+      $('.common-property').click(function(){
+        const selected = $(this).html();
+        $("#type_select").val(selected);
+        $("#type_select_id").val(selected);
+      })
+      
+
+}).autocomplete("instance")._renderItem = function (ul, item) {
+    $('#type_select').popover('hide'); //hide popover
+    return $("<li>")
+        .append("<div><b>" + item.label + "</b><br>" + item.description + "</div>")
+        .appendTo(ul);
+};
+
 $('#search-button').click(function () {
     const search_text = $('#searchbox').val();
     if (!search_text) {
@@ -76,3 +114,25 @@ $('#search-button').click(function () {
         return false;
     }
 });
+
+function ajaxCall(request,type,response){
+    $.ajax({
+        // https://www.wikidata.org/w/api.php?action=wbsearchentities&search=W&format=json&errorformat=plaintext&language=en&uselang=en&type=item
+        url: "https://www.wikidata.org/w/api.php",
+        dataType: "jsonp",
+        data: {
+            'action': "wbsearchentities",
+            'format': "json",
+            'errorformat': "plaintext",
+            'language': "en",
+            'uselang': "en",
+            'type': type,
+            'search': request.term
+        },
+        success: function (data) {
+            // console.log(data);
+            data = data.search;
+            response(data);
+        }
+    });
+}

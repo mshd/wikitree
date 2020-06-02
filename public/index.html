@@ -391,12 +391,8 @@
 
           <div class="form-group col-md-2 col-sm-6">
             <label for="type_select">Property</label>
-            <select id="type_select" class="form-control" name="type">
-              <option>ancestors</option>
-              <option>descendants</option>
-              <option>owner</option>
-              <option>owns</option>
-            </select>
+            <input name="type" type="hidden" id="type_select_id" />
+            <input type="text" id="type_select" class="form-control type_select" placeholder="Please select property" value="" onblur="" onfocus="">
           </div>
 
           <div class="form-group col-md-2 col-sm-6">
