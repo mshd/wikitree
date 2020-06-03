@@ -132,7 +132,16 @@ function ajaxCall(request,type,response){
         success: function (data) {
             // console.log(data);
             data = data.search;
+            if (type === 'property')
+                data = data.filter((item)=> item.datatype === 'wikibase-item');
             response(data);
         }
     });
 }
+
+//check and add query string parameter to property input text
+const params = new URLSearchParams(window.location.search)
+if (params.has('type_label'))
+    $('#type_select').val(params.get('type_label'));
+if (params.has('type'))
+    $('#type_select_id').val(params.get('type'));
