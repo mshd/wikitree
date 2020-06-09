@@ -395,7 +395,14 @@ function processLevel(data, item_id, child_id, lang, secondLang, level) {
                 children_distinct_Qids.push(child_item_id);
             }
             // if (childrenInLevel[item_id].indexOf(child_item_id) == -1) {
+            if(child_item_id !== undefined) {
                 childrenInLevel[child_item_id] = item_id;//.push();
+            }
+            // else{
+            //     console.log("Bug not defined");
+            //     console.log(children);
+            //     console.log(item_id);
+            // }
             // }
             // }
         }
