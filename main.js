@@ -26,7 +26,7 @@ var supportedTypes = {
         { prop: 'P279', name: 'subclass', to_q: false, edge_color: '#FF4848' },
     ]
 };
-var treeType, maxLevel, secondLang, orientation, chartOptions = [];
+var treeType, maxLevel, lang, secondLang, orientation, chartOptions = [];
 var labelIds = [];
 
 
@@ -176,7 +176,7 @@ function renderData(data) {
 function drawChart() {
     var rows = [];
     var root = getParameterByName('q') || 'Q154952';
-    var lang = getParameterByName('lang') || 'en';
+    lang = getParameterByName('lang') || 'en';
     //Add nocache parameter
     var nocache = getParameterByName('nocache') || '0';;
     moment.locale(lang);
