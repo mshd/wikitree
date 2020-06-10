@@ -12,10 +12,10 @@ function getWikidataLanguages() {
 function getWikidataLanguagesSource() {
     var l = getWikidataLanguages();
     var r = [];
-    for(lang in l){
+    for(var langInL in l){
         r.push({
-            label: l[lang],
-            id: lang,
+            label: l[langInL],
+            id: langInL,
         });
     }
     return r;
