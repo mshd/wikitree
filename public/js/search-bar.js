@@ -14,12 +14,19 @@ $('.dropdown-settings a').on('click', function (event) {
 
     return false;
 });
-
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+var lang = getParameterByName('lang') || 'en';
 $("#option_lang").autocomplete({
     source: getWikidataLanguagesSource(),
     select: function (event, ui) {
         $("#option_lang").val(ui.item.label);
         $("#option_lang_hidden").val(ui.item.id);
+        lang = ui.item.id;
         return false;
     }
 });
@@ -124,8 +131,8 @@ function ajaxCall(request,type,response){
             'action': "wbsearchentities",
             'format': "json",
             'errorformat': "plaintext",
-            'language': "en",
-            'uselang': "en",
+            'language': lang,
+            'uselang': lang,
             'type': type,
             'search': request.term
         },
