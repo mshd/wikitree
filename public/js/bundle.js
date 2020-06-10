@@ -261,12 +261,14 @@ function getPeopleData(claims, newClaims, treeType) {
         html += '<br />';
     }
 
-    // if (burialDate || burialPlace) {
-    //     html += "⎧ᴿᴵᴾ⎫ ";
-    //     html += (burialDate ? burialDate + " " : "");
-    //     html += (burialPlace ? "{" + burialPlace + "}" : "");
-    //     html += "<br />";
-    // }
+    if (burialDate || burialPlace) {
+        html += '<span class="co_index co_burial">';
+        // html += "⎧ᴿᴵᴾ⎫ ";
+        html += "&#9904;&#65039;";
+        html += (burialDate ? burialDate + " " : "");
+        html += (burialPlace ? "{" + burialPlace + "}" : "");
+        html += "<br /></span>";
+    }
 
     // // number of occupations P106
     var occupationsCount = (newClaims['P106'] && newClaims['P106'].length) || 0;
@@ -519,10 +521,10 @@ exports.wikidataApi = function(para, callback, wait) {
             .then(response => response.json())
             // .then(wbk.parse.wd.entities)
             .then(entities => {
+                // console.log(entities);
                 callback(null,entities);
                 // return entities;
-            });
-            // .catch(error =>{ console.log("ERROR fetch in Wikidata.js :"+error.message); callback(new Error("ERROR fetch in Wikidata.js :"+error.message),null); }); //add Error catch
+            }).catch(error =>{ console.log("ERROR fetch in Wikidata.js :"+error.message); callback(new Error("ERROR fetch in Wikidata.js :"+error.message),null); }); //add Error catch
             //https://nodejs.org/api/errors.html#errors_error_first_callbacks
     }else{
         //https://stackoverflow.com/questions/31710768/how-can-i-fetch-an-array-of-urls-with-promise-all
@@ -538,8 +540,7 @@ exports.wikidataApi = function(para, callback, wait) {
             }
             callback(null,{entities: entities});
 
-        });
-            // .catch(error => {console.log("Error Promise in wikidata.js : "+error.message); callback(new Error("Error Promise in wikidata.js : "+error.message),null);}); //add Error catch
+        }).catch(error => {console.log("Error Promise in wikidata.js : "+error.message); callback(new Error("Error Promise in wikidata.js : "+error.message),null);}); //add Error catch
     }
 
 };
@@ -557,7 +558,7 @@ var wikidataController = require('../controllers/wikidata');
 var processNode = require('../controllers/processNode');
 const wikitree = require('../controllers/thirdsources/wikitree');
 var treeType;
-var stackChildren = true;
+var stackChildren;
 var dataCache = new NodeCache();
 
 var maxLevel, chartOptions = [];
@@ -605,7 +606,7 @@ exports.init = function (request, callback) {
 
     //set MaxLevel to Global so it can be accessed
     maxLevel = request.maxLevel || 3;
-    stackChildren = true;//request.chartOptions.stackChildren ||
+    stackChildren = false;//request.chartOptions.stackChildren ||
     //check primary selected language, change to english if not exist in default language
     lang = (request.lang in defLanguage)? request.lang : "en";
     treeType = request.property;
@@ -615,7 +616,7 @@ exports.init = function (request, callback) {
     // console.log("fetch spouses: "+(chartOptions.spouses?"yes":"no"));
     //Second language must in default language and not equal primary language
     secondLang = (request.secondLang in defLanguage && request.secondLang !== request.lang )? request.secondLang : null;
-    if (stackChildren == "false" || treeType == "ancestors" || treeType == "owner") { stackChildren = false; }
+    if (stackChildren == "1" || treeType === "descendants" || treeType === "owns") { stackChildren = true; }
     // let memCache = new cache.Cache();
     var nocache = request.nocache;
     //configure cached filename with second language
@@ -942,7 +943,14 @@ function processLevel(data, item_id, child_id, lang, secondLang, level) {
                 children_distinct_Qids.push(child_item_id);
             }
             // if (childrenInLevel[item_id].indexOf(child_item_id) == -1) {
+            if(child_item_id !== undefined) {
                 childrenInLevel[child_item_id] = item_id;//.push();
+            }
+            // else{
+            //     console.log("Bug not defined");
+            //     console.log(children);
+            //     console.log(item_id);
+            // }
             // }
             // }
         }
@@ -1014,7 +1022,7 @@ var supportedTypes = {
         { prop: 'P279', name: 'subclass', to_q: false, edge_color: '#FF4848' },
     ]
 };
-var treeType, maxLevel, secondLang, orientation, chartOptions = [];
+var treeType, maxLevel, lang, secondLang, orientation, chartOptions = [];
 var labelIds = [];
 
 
@@ -1164,7 +1172,7 @@ function renderData(data) {
 function drawChart() {
     var rows = [];
     var root = getParameterByName('q') || 'Q154952';
-    var lang = getParameterByName('lang') || 'en';
+    lang = getParameterByName('lang') || 'en';
     //Add nocache parameter
     var nocache = getParameterByName('nocache') || '0';;
     moment.locale(lang);
@@ -1174,6 +1182,7 @@ function drawChart() {
     var urlVars = getUrlVars();
 
     chartOptions.birthname = urlVars['options[birthname]'] || false;
+    chartOptions.burial = urlVars['options[burial]'] || false;
     chartOptions.socialmedia = urlVars['options[socialmedia]'] || false;
     chartOptions.education = urlVars['options[education]'] || false;
     chartOptions.spouses = urlVars['options[spouses]'] || false;
@@ -14319,10 +14328,10 @@ function getWikidataLanguages() {
 function getWikidataLanguagesSource() {
     var l = getWikidataLanguages();
     var r = [];
-    for(lang in l){
+    for(var langInL in l){
         r.push({
-            label: l[lang],
-            id: lang,
+            label: l[langInL],
+            id: langInL,
         });
     }
     return r;
