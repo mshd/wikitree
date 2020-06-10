@@ -10,7 +10,7 @@ var wikidataController = require('../controllers/wikidata');
 var processNode = require('../controllers/processNode');
 const wikitree = require('../controllers/thirdsources/wikitree');
 var treeType;
-var stackChildren = true;
+var stackChildren;
 var dataCache = new NodeCache();
 
 var maxLevel, chartOptions = [];
@@ -58,7 +58,7 @@ exports.init = function (request, callback) {
 
     //set MaxLevel to Global so it can be accessed
     maxLevel = request.maxLevel || 3;
-    stackChildren = true;//request.chartOptions.stackChildren ||
+    stackChildren = false;//request.chartOptions.stackChildren ||
     //check primary selected language, change to english if not exist in default language
     lang = (request.lang in defLanguage)? request.lang : "en";
     treeType = request.property;
@@ -68,7 +68,7 @@ exports.init = function (request, callback) {
     // console.log("fetch spouses: "+(chartOptions.spouses?"yes":"no"));
     //Second language must in default language and not equal primary language
     secondLang = (request.secondLang in defLanguage && request.secondLang !== request.lang )? request.secondLang : null;
-    if (stackChildren == "false" || treeType == "ancestors" || treeType == "owner") { stackChildren = false; }
+    if (stackChildren == "1" || treeType === "descendants" || treeType === "owns") { stackChildren = true; }
     // let memCache = new cache.Cache();
     var nocache = request.nocache;
     //configure cached filename with second language
