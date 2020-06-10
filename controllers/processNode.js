@@ -260,12 +260,14 @@ function getPeopleData(claims, newClaims, treeType) {
         html += '<br />';
     }
 
-    // if (burialDate || burialPlace) {
-    //     html += "⎧ᴿᴵᴾ⎫ ";
-    //     html += (burialDate ? burialDate + " " : "");
-    //     html += (burialPlace ? "{" + burialPlace + "}" : "");
-    //     html += "<br />";
-    // }
+    if (burialDate || burialPlace) {
+        html += '<span class="co_index co_burial">';
+        // html += "⎧ᴿᴵᴾ⎫ ";
+        html += "&#9904;&#65039;";
+        html += (burialDate ? burialDate + " " : "");
+        html += (burialPlace ? "{" + burialPlace + "}" : "");
+        html += "<br /></span>";
+    }
 
     // // number of occupations P106
     var occupationsCount = (newClaims['P106'] && newClaims['P106'].length) || 0;

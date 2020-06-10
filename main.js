@@ -186,6 +186,7 @@ function drawChart() {
     var urlVars = getUrlVars();
 
     chartOptions.birthname = urlVars['options[birthname]'] || false;
+    chartOptions.burial = urlVars['options[burial]'] || false;
     chartOptions.socialmedia = urlVars['options[socialmedia]'] || false;
     chartOptions.education = urlVars['options[education]'] || false;
     chartOptions.spouses = urlVars['options[spouses]'] || false;
