@@ -124,12 +124,13 @@ exports.init = function (request, callback) {
                                     return values[offset].id 
                                 }
                             }else{
-                                return "??"
+                                return "<span class='unknownVal'></span>"
                             }
                         }
                     }
                 );
                 //fetch labels for vars
+                // console.log(processNode.labelIds);
                 //TODO no labels
                 var data = wikidataController.wikidataApi({
                     ids: Array.from(new Set(processNode.labelIds)),//make labelIds unique https://futurestud.io/tutorials/node-js-get-an-array-with-unique-values-delete-duplicates
