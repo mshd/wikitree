@@ -467,6 +467,9 @@ function addLabel(claim,type = null) {
     if (claim && Array.isArray(claim) && claim.length > 0) {
         claim = claim[0].value;
     }
+    if (Array.isArray(claim)){//empty array; Happens when unknown are noValue
+        return "?";
+    }
     if (claim) {//&& labelIds.indexOf(value) == -1
         if (type == 'BD')
             exports.birthAndDeathPlace.push(claim);
@@ -507,6 +510,9 @@ exports.wikidataApi = function(para, callback, wait) {
         callback(null,null);
         return;
     }
+    para.ids = para.ids.filter(item => !!item);//delete undefined values
+    console.log(para);
+
     const urls = wbk.getManyEntities({
         ids: para.ids,
         languages: para.lang || [ 'en', 'fr', 'de' ], // returns all languages if not specified
@@ -514,7 +520,6 @@ exports.wikidataApi = function(para, callback, wait) {
         // format: 'xml', // defaults to json
         // redirections: false // defaults to true
     });
-    // console.log(urls);
     if(urls.length === 1){
         fetch(urls)
             // .then(response => console.log(response))
@@ -672,12 +677,13 @@ exports.init = function (request, callback) {
                                     return values[offset].id 
                                 }
                             }else{
-                                return "??"
+                                return "<span class='unknownVal'></span>"
                             }
                         }
                     }
                 );
                 //fetch labels for vars
+                // console.log(processNode.labelIds);
                 //TODO no labels
                 var data = wikidataController.wikidataApi({
                     ids: Array.from(new Set(processNode.labelIds)),//make labelIds unique https://futurestud.io/tutorials/node-js-get-an-array-with-unique-values-delete-duplicates
