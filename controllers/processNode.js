@@ -466,6 +466,9 @@ function addLabel(claim,type = null) {
     if (claim && Array.isArray(claim) && claim.length > 0) {
         claim = claim[0].value;
     }
+    if (Array.isArray(claim)){//empty array; Happens when unknown are noValue
+        return "?";
+    }
     if (claim) {//&& labelIds.indexOf(value) == -1
         if (type == 'BD')
             exports.birthAndDeathPlace.push(claim);

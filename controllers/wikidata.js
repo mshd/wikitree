@@ -13,6 +13,9 @@ exports.wikidataApi = function(para, callback, wait) {
         callback(null,null);
         return;
     }
+    para.ids = para.ids.filter(item => !!item);//delete undefined values
+    console.log(para);
+
     const urls = wbk.getManyEntities({
         ids: para.ids,
         languages: para.lang || [ 'en', 'fr', 'de' ], // returns all languages if not specified
@@ -20,7 +23,6 @@ exports.wikidataApi = function(para, callback, wait) {
         // format: 'xml', // defaults to json
         // redirections: false // defaults to true
     });
-    // console.log(urls);
     if(urls.length === 1){
         fetch(urls)
             // .then(response => console.log(response))
