@@ -40,7 +40,8 @@ If you want to use the script server side, use parameter "&serverSide=1", this m
 
 ## License
 
-Copyrighted so far
+GNU General Public License v3.0
+see LICENSE
 
 ## Acknowledgments
 
